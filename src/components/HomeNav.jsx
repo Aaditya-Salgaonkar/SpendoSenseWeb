@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/supabase";
 import { Button } from "@/components/ui/button";
 import { DashboardRounded, Insights, Money, Wallet } from "@mui/icons-material";
-import { Coins } from "lucide-react";
+import { Building, Coins } from "lucide-react";
 
 const HomeNav = () => {
   const navigate = useNavigate();
@@ -71,6 +71,10 @@ const HomeNav = () => {
         <Button className="flex gap-1 bg-[#0d0d51] p-2 rounded-lg ml-5" onClick={() => navigate('/income')}>
           <Coins />
           <p className="text-white font-semibold">Income</p>
+        </Button>
+        <Button className="flex gap-1 bg-[#0d0d51] p-2 rounded-lg ml-5" onClick={() => navigate('/assets')}>
+          <Building />
+          <p className="text-white font-semibold">Assets</p>
         </Button>
       </div>
 

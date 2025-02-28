@@ -26,6 +26,7 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import IncomeCard from "@/components/IncomeCard";
 import RecentTransactions from "@/components/RecentTransaction";
 import IncomeVsExpenses from "@/components/IE";
+import AssetDistribution from "@/components/assets";
 
 const COLORS = ["#4CAF50", "#FFC107", "#2196F3", "#FF5722"];
 
@@ -375,36 +376,7 @@ const Dashboard = ({token}) => {
       </div>
 
       {/* Charts & Goals Section */}
-      <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Asset Distribution PieChart */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
-          <h2 className="text-xl font-semibold text-purple-400">
-            Asset Distribution
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={assetData}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={120}
-                fill="#8884d8"
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {assetData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Income vs Expenses BarChart */}
-        <IncomeVsExpenses />
-      </div>
+      <AssetDistribution />
 
       {/* Recent Transactions */}
       <RecentTransactions />
@@ -415,7 +387,7 @@ const Dashboard = ({token}) => {
           Alerts & Notifications
         </h2>
         <p className="text-lg text-yellow-300">
-          ⚠ 3 Bills are past due. Pay soon to avoid late fees.
+          ⚠ 3 Bills are past due. Pay soon to avoid late fees.     ye sab nahi hoga humse bhai.........
         </p>
       </div>
     </div>

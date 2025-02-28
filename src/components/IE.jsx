@@ -31,7 +31,7 @@ const IncomeVsExpenses = () => {
           .from("transactions")
           .select("id, categoryid, amount, transactiontime")
           .order("transactiontime", { ascending: true });
-
+        console.log("Transaction : ",expenseData)
         if (expenseError) throw expenseError;
 
         // Group data by date (monthly for example)
