@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -107,32 +107,51 @@ const Dashboard = () => {
     const [analytics, setAnalytics] = useState([]);
     const [financialAdvice, setFinancialAdvice] = useState([]);
     const [categories, setCategories] = useState([]);
-
+  
     useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const { data, error } = await supabase.from("categories").select("*");
-    
-          if (error) {
-            console.error("Error fetching categories:", error);
-            return;
-          }
-    
-          if (Array.isArray(data)) {
-            setCategories(data);
-          } else {
-            console.warn("Unexpected data format:", data);
-            setCategories([]);
-          }
-        } catch (err) {
-          console.error("Unexpected error fetching categories:", err);
-        }
-      };
-    
+      fetchUsers();
+      fetchTransactions();
+      fetchBudgets();
+      fetchAnalytics();
+      fetchFinancialAdvice();
       fetchCategories();
     }, []);
-    
-
+  
+    async function fetchUsers() {
+      let { data, error } = await supabase.from("users").select("*");
+      if (error) console.error("Error fetching users:", error);
+      else setUsers(data);
+    }
+  
+    async function fetchTransactions() {
+      let { data, error } = await supabase.from("transactions").select("*");
+      if (error) console.error("Error fetching transactions:", error);
+      else setTransactions(data);
+    }
+  
+    async function fetchBudgets() {
+      let { data, error } = await supabase.from("budgets").select("*");
+      if (error) console.error("Error fetching budgets:", error);
+      else setBudgets(data);
+    }
+  
+    async function fetchAnalytics() {
+      let { data, error } = await supabase.from("analytics").select("*");
+      if (error) console.error("Error fetching analytics:", error);
+      else setAnalytics(data);
+    }
+  
+    async function fetchFinancialAdvice() {
+      let { data, error } = await supabase.from("financialadvice").select("*");
+      if (error) console.error("Error fetching financial advice:", error);
+      else setFinancialAdvice(data);
+    }
+  
+    async function fetchCategories() {
+      let { data, error } = await supabase.from("categories").select("*");
+      if (error) console.error("Error fetching categories:", error);
+      else setCategories(data);
+    }
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     navigate("/login");
@@ -317,34 +336,51 @@ const Dashboard = () => {
 
         {/* Card 3: Spendings Breakdown */}
         <motion.div whileHover={{ scale: 1.05 }}>
-          <Stack sx={{ height: "100%", width: "100%"}}>
+          <Stack sx={{ height: "100%", width: "100%", padding: 1.5 }}>
             <Box
               sx={{
                 height: "100%",
                 width: "100%",
                 backgroundColor: "#171c3a",
                 borderRadius: "20px",
-                padding: 4,
+                padding: 4.5,
               }}
             >
-              <Typography fontSize={30} fontWeight={600} color="white" mb={3}>
-                Categories
+              <Typography fontSize={20} fontWeight={600} color="white" mb={2}>
+                Spendings
               </Typography>
-              <Stack direction="column" spacing={2}>
-                
-              {categories.length > 0 ? (
-  categories.map((category) => (
-    <div key={category.id} className="category-item">
-      {category.name}
-      {console.log('Category : ',category)}
-    </div>
-  ))
-) : (
-  <p>No categories available.</p>
-)}
-
+              <Stack direction="column" spacing={3}>
+                {spendingBreakdown.map((item, index) => (
+                  <Stack
+                    key={index}
+                    direction="row"
+                    alignItems="center"
+                    spacing={2}
+                  >
+                    <Box
+                      sx={{
+                        height: 50,
+                        width: 50,
+                        backgroundColor: item.iconColor,
+                        borderRadius: "15px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Stack>
+                      <Typography fontSize={18} fontWeight={500} color="white">
+                        {item.label}
+                      </Typography>
+                      <Typography fontSize={20} fontWeight={600} color="white">
+                        {item.amount}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                ))}
               </Stack>
-              
             </Box>
           </Stack>
         </motion.div>
