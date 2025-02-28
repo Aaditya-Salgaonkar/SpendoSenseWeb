@@ -23,6 +23,9 @@ import HomeNav from "@/components/HomeNav";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import IncomeCard from "@/components/IncomeCard";
+import RecentTransactions from "@/components/RecentTransaction";
+import IncomeVsExpenses from "@/components/IE";
 
 const COLORS = ["#4CAF50", "#FFC107", "#2196F3", "#FF5722"];
 
@@ -98,7 +101,7 @@ const transactions = [
   },
 ];
 
-const Dashboard = () => {
+const Dashboard = ({token}) => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(true);
   const [users, setUsers] = useState([]);
@@ -107,10 +110,12 @@ const Dashboard = () => {
     const [analytics, setAnalytics] = useState([]);
     const [financialAdvice, setFinancialAdvice] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [loading,setLoading] = useState(false);
 
     useEffect(() => {
       const fetchCategories = async () => {
         try {
+          setLoading(true)
           const { data, error } = await supabase.from("categories").select("*");
     
           if (error) {
@@ -120,6 +125,7 @@ const Dashboard = () => {
     
           if (Array.isArray(data)) {
             setCategories(data);
+            setLoading(false)
           } else {
             console.warn("Unexpected data format:", data);
             setCategories([]);
@@ -134,6 +140,7 @@ const Dashboard = () => {
     
 
   const handleLogout = () => {
+    
     sessionStorage.removeItem("token");
     navigate("/login");
   };
@@ -152,7 +159,7 @@ const Dashboard = () => {
       {/* Combined Cards Section */}
       <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Net Worth & Income Source */}
-        <Stack
+        {/* <Stack
           direction="column"
           gap={2}
           sx={{ height: "100%", width: "100%" }}
@@ -215,8 +222,8 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </Box>
           </motion.div>
-        </Stack>
-
+        </Stack> */}
+        <IncomeCard token={token} />
         {/* Card 2: Spending Line Charts */}
         <Stack
           sx={{ height: "100%", width: "100%" }}
@@ -317,34 +324,51 @@ const Dashboard = () => {
 
         {/* Card 3: Spendings Breakdown */}
         <motion.div whileHover={{ scale: 1.05 }}>
-          <Stack sx={{ height: "100%", width: "100%"}}>
+          <Stack sx={{ height: "100%", width: "100%", padding: 1.5 }}>
             <Box
               sx={{
                 height: "100%",
                 width: "100%",
                 backgroundColor: "#171c3a",
                 borderRadius: "20px",
-                padding: 4,
+                padding: 4.5,
               }}
             >
-              <Typography fontSize={30} fontWeight={600} color="white" mb={3}>
-                Categories
+              <Typography fontSize={20} fontWeight={600} color="white" mb={2}>
+                Spendings
               </Typography>
-              <Stack direction="column" spacing={2}>
-                
-              {categories.length > 0 ? (
-  categories.map((category) => (
-    <div key={category.id} className="category-item">
-      {category.name}
-      {console.log('Category : ',category)}
-    </div>
-  ))
-) : (
-  <p>No categories available.</p>
-)}
-
+              <Stack direction="column" spacing={3}>
+                {spendingBreakdown.map((item, index) => (
+                  <Stack
+                    key={index}
+                    direction="row"
+                    alignItems="center"
+                    spacing={2}
+                  >
+                    <Box
+                      sx={{
+                        height: 50,
+                        width: 50,
+                        backgroundColor: item.iconColor,
+                        borderRadius: "15px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Stack>
+                      <Typography fontSize={18} fontWeight={500} color="white">
+                        {item.label}
+                      </Typography>
+                      <Typography fontSize={20} fontWeight={600} color="white">
+                        {item.amount}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                ))}
               </Stack>
-              
             </Box>
           </Stack>
         </motion.div>
@@ -379,52 +403,11 @@ const Dashboard = () => {
         </div>
 
         {/* Income vs Expenses BarChart */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col justify-center">
-          <h2 className="text-xl font-semibold text-orange-400">
-            Income vs Expenses
-          </h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={transactions}>
-              <XAxis dataKey="category" stroke="white" />
-              <YAxis stroke="white" />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="amount" fill="#4CAF50" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <IncomeVsExpenses />
       </div>
 
       {/* Recent Transactions */}
-      <div className="w-full mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold text-yellow-400">
-          Recent Transactions
-        </h2>
-        <table className="w-full mt-4">
-          <thead>
-            <tr className="text-left border-b border-gray-700">
-              <th className="p-2">Date</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((txn) => (
-              <tr key={txn.id} className="border-b border-gray-700">
-                <td className="p-2">{txn.date}</td>
-                <td className="p-2">{txn.category}</td>
-                <td
-                  className={`p-2 ${txn.type === "Income" ? "text-green-400" : "text-red-400"}`}
-                >
-                  {txn.type}
-                </td>
-                <td className="p-2">${txn.amount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <RecentTransactions />
 
       {/* Notifications */}
       <div className="w-full mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">

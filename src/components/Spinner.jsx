@@ -1,5 +1,5 @@
 import React from 'react';
-import spinnerGif from '../assets/loading-gif-blue.gif';
+import spinnerGif from '../assets/s.gif';
 
 const Spinner = ({top="15%"}) => {
   return (
