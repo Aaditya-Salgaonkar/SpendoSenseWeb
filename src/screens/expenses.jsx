@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Box, Card, Typography } from "@mui/material";
+import { Button, Box, Card, Typography,Stack } from "@mui/material";
 import { supabase } from "../supabase";
 import HomeNav from "../components/HomeNav";
 import { motion } from "framer-motion";
@@ -73,60 +73,71 @@ const [darkMode, setDarkMode] = useState(true);
       <HomeNav />
       </div>
       
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", }}>
-        <Typography variant="h5" className="text-center text-gray-300 mb-6 ">
-          Your Transaction History
-        </Typography>
-
-        <Link to="/addexpense">
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            className="bg-blue-700  text-white mt-5 px-6 py-2 rounded-lg shadow-md hover:bg-purple-600 transition-all"
-          >
-            + Add Transaction
-          </motion.button>
-        </Link>
-
-        {/* Transactions Table */}
-        <Card className="w-[80%] mt-6 bg-[#0a0f1c] shadow-lg rounded-lg p-3 overflow-y-auto mb-20">
-          {loading ? (
-            <Box className="flex justify-center bg-[#0a0f1c]">
-              <div className="items-center justify-center py-5"><Spinner /></div>
-            </Box>
-          ) : transactions.length > 0 ? (
-            <table className="w-full border-collapse ">
-              <thead className="sticky top-0 bg-gray-900 text-white">
-                <tr>
-                  <th className="py-3 px-4 text-left">Merchant</th>
-                  <th className="py-3 px-4 text-left">Date</th>
-                  <th className="py-3 px-4 text-left">Category</th>
-                  <th className="py-3 px-4 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((transaction) => (
-                  <motion.tr
-                    key={transaction.id}
-                    whileHover={{ scale: 1.02 }}
-                    className="border-b border-gray-600 hover:bg-gray-700 bg-[#0a0f1c] transition-all"
-                  >
-                    <td className="py-4 px-4 text-white">{transaction.merchantName}</td>
-                    <td className="py-4 px-4 text-white">{new Date(transaction.transactiontime).toLocaleDateString()}</td>
-                    <td className="py-4 px-4 text-white">
-                      {categoryIcons[categories[transaction.categoryid]] || "📌"} {categories[transaction.categoryid] || "Unknown"}
-                    </td>
-                    <td className="py-4 px-4 text-right text-red-600">₹{transaction.amount.toFixed(2)}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <Typography color="textSecondary" className="text-center py-6">
-              No transactions found.
-            </Typography>
-          )}
-        </Card>
-      </Box>
+      {
+        loading?(<div className="flex-1 items-center justify-center"><Spinner /></div>):(<div><Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", }}>
+          <Typography variant="h5" className="text-center text-gray-300  ">
+            Your Expenses
+          </Typography>
+  
+          <div className="flex flex-row items-center justify-center gap-5 mt-5">
+          <Link to="/addexpense">
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              className="bg-blue-700  text-white px-6 py-2 rounded-lg shadow-md hover:bg-purple-600 transition-all"
+            >
+              + Add Expense
+            </motion.button>
+          </Link>
+          <Link to="/payment">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="bg-blue-700  text-white px-6 py-2 rounded-lg shadow-md hover:bg-purple-600 transition-all"
+              >
+                Payment
+              </motion.button>
+            </Link>
+          </div>
+          {/* Transactions Table */}
+          <Card className="w-[80%] mt-6 bg-[#0a0f1c] shadow-lg rounded-lg p-3 overflow-y-auto mb-20">
+            {loading ? (
+              <Box className="flex justify-center bg-[#0a0f1c]">
+                <div className="items-center justify-center py-5"><Spinner /></div>
+              </Box>
+            ) : transactions.length > 0 ? (
+              <table className="w-full border-collapse ">
+                <thead className="sticky top-0 bg-gray-900 text-white">
+                  <tr>
+                    <th className="py-3 px-4 text-left">Merchant</th>
+                    <th className="py-3 px-4 text-left">Date</th>
+                    <th className="py-3 px-4 text-left">Category</th>
+                    <th className="py-3 px-4 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((transaction) => (
+                    <motion.tr
+                      key={transaction.id}
+                      whileHover={{ scale: 1.02 }}
+                      className="border-b border-gray-600 hover:bg-gray-700 bg-[#0a0f1c] transition-all"
+                    >
+                      <td className="py-4 px-4 text-white">{transaction.merchantName}</td>
+                      <td className="py-4 px-4 text-white">{new Date(transaction.transactiontime).toLocaleDateString()}</td>
+                      <td className="py-4 px-4 text-white">
+                        {categoryIcons[categories[transaction.categoryid]] || "📌"} {categories[transaction.categoryid] || "Unknown"}
+                      </td>
+                      <td className="py-4 px-4 text-right text-red-600">₹{transaction.amount.toFixed(2)}</td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <Typography color="textSecondary" className="text-center py-6">
+                No transactions found.
+              </Typography>
+            )}
+          </Card>
+        </Box></div>)
+      }
     </div>
   );
 };

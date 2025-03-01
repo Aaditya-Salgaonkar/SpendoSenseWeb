@@ -88,7 +88,7 @@ const BudgetingDialog = () => {
   return (
     <>
       {/* Button to Open Dialog */}
-      <Button className="top-10 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md" onClick={() => setOpen(true)}>
+      <Button className="top-10 bg-blue-700 text-white px-4 py-2 rounded-md" onClick={() => setOpen(true)}>
         + Add Budget
       </Button>
 

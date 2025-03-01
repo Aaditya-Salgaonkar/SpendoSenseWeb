@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "@mui/icons-material";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({ fullname: "", email: "", password: "" });
@@ -56,13 +57,16 @@ export default function SignUpPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-      >
+      ><Link to="/landingpage" className="flex items-center">
+      <ArrowLeft sx={{ fontSize: 32, color:'white' }} />
+    </Link>
         <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
           Create an Account
         </h2>
         <p className="mt-2 text-gray-400 text-center">Join us and manage your finances effortlessly.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          
           {/* Name Input */}
           <div className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg">
             <FaUser className="text-blue-400" />

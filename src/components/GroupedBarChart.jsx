@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer 
 } from "recharts";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import Spinner from "./Spinner";
 
 const GroupedBarChart = () => {
   const [data, setData] = useState([]);
@@ -87,15 +88,15 @@ const GroupedBarChart = () => {
 
   return (
     <Card className="flex flex-col bg-[#101628] text-white p-4 w-full md:w-2/3 lg:w-1/2 h-[480px] items-center justify-center shadow-lg">
-      <CardTitle className="mb-4">Planned vs. Actual Spending</CardTitle>
+      <CardTitle className="mb-4 font-bold text-3xl pt-10 ">Planned vs. Actual Spending</CardTitle>
       <CardContent className="w-full h-full flex justify-center items-center">
         {loading ? (
-          <p>Loading...</p>
+           <div className="flex-1 items-center justify-center"><Spinner /></div>
         ) : (
           <ResponsiveContainer width="100%" height={400}>
             <BarChart 
               data={data} 
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               barCategoryGap={20} // Ensure proper spacing
               barGap={5}
             >

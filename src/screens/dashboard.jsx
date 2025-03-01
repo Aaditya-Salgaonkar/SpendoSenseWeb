@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Box, Stack, Typography } from "@mui/material";
 import { supabase } from "@/supabase";
+import { People } from "@mui/icons-material";
 import {
   PieChart,
   Pie,
@@ -111,8 +112,149 @@ const Dashboard = ({token}) => {
     const [analytics, setAnalytics] = useState([]);
     const [financialAdvice, setFinancialAdvice] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading,setLoading] = useState(false);
-
+    const [loading,setLoading] = useState(true);
+    const [spendingBreakdown, setSpendingBreakdown] = useState([]);
+    const [incomeSourceDataForGraph, setIncomeSourceDataForGraph] = useState([]);
+    const [incomeSourceDataForGraph2, setIncomeSourceDataForGraph2] = useState(
+      []
+    );
+    const categoryMap = [
+      {
+        id: "47823c77-f9b8-4387-a76d-54e07c0bf227",
+        label: "Dining Out",
+        icon: <HomeIcon sx={{ color: "white" }} />,
+        iconColor: "#8B5CF6",
+      },
+      {
+        id: "5d98b586-fbb9-4c4b-bed5-ff739eba3ea5",
+        label: "Travel",
+        icon: <PersonIcon sx={{ color: "white" }} />,
+        iconColor: "#EC4899",
+      },
+      {
+        id: "de8d5f42-77c6-4b29-9cdd-6bfc4daf3593",
+        label: "Transportation",
+        icon: <DirectionsCarIcon sx={{ color: "white" }} />,
+        iconColor: "#F97316",
+      },
+      {
+        id: "52c6cc86-78c2-4848-8f4a-ca934fe90ca1",
+        label: "Healthcare",
+        icon: <People sx={{ color: "white" }} />,
+        iconColor: "rgb(253, 81, 54)",
+      },
+    ];
+    useEffect(() => {
+      const fetchSpendingBreakdown = async () => {
+        try {
+          const breakdownData = await Promise.all(
+            categoryMap.map(async (category) => {
+              const { data, error } = await supabase
+                .from("transactions")
+                .select("amount")
+                .eq("categoryid", category.id);
+  
+              if (error) {
+                console.error(
+                  `Error fetching ${category.label} transactions:`,
+                  error
+                );
+                return { ...category, amount: "$0.00" };
+              }
+  
+              const totalAmount = data.reduce(
+                (sum, txn) => sum + parseFloat(txn.amount),
+                0
+              );
+  
+              const formattedAmount = `$${totalAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`;
+  
+              return {
+                ...category,
+                amount: formattedAmount,
+              };
+            })
+          );
+  
+          setSpendingBreakdown(breakdownData);
+        } catch (error) {
+          console.error("Error fetching spending breakdown:", error);
+        }
+      };
+  
+      fetchSpendingBreakdown();
+    }, []);
+  
+    useEffect(() => {
+      console.log("Fetching income data...");
+  
+      const fetchIncomeData = async () => {
+        try {
+          const {
+            data: { user },
+            error: useError,
+          } = await supabase.auth._getUser();
+          console.log("Fetching income data...");
+          const { data, error } = await supabase
+            .from("income")
+            .select("amount, created_at")
+            .eq("userId", user.id)
+            .order("created_at", { ascending: true });
+  
+          if (error) throw error;
+  
+          console.log("Fetched income data:", data);
+  
+          const formattedData = data.map((item) => ({
+            value: item.amount,
+            date: new Date(item.created_at).toLocaleDateString(),
+          }));
+  
+          console.log("Formatted income data:", formattedData);
+          setIncomeSourceDataForGraph(formattedData);
+        } catch (err) {
+          console.error("Error fetching income data:", err.message);
+        }
+      };
+  
+      const fetchSpendData = async () => {
+        try {
+          const {
+            data: { user },
+            error: useError,
+          } = await supabase.auth._getUser();
+          console.log("Fetching spend data...");
+          const { data, error } = await supabase
+            .from("transactions")
+            .select("amount, transactiontime")
+            .eq("userid", user.id)
+            .order("transactiontime", { ascending: true });
+  
+          if (error) throw error;
+  
+          console.log("Fetched spend data:", data);
+  
+          const formattedSpendData = data.map((item) => ({
+            value: item.amount,
+            date: new Date(item.transactiontime).toLocaleDateString(),
+          }));
+  
+          console.log(
+            "---------------------Formatted spend data:",
+            formattedSpendData
+          );
+          setIncomeSourceDataForGraph2(formattedSpendData);
+        } catch (err) {
+          console.error("Error fetching spend data:", err.message);
+        }
+      };
+  
+      fetchIncomeData();
+      fetchSpendData();
+    }, []);
     useEffect(() => {
       const fetchCategories = async () => {
         try {
@@ -133,7 +275,7 @@ const Dashboard = ({token}) => {
           }
         } catch (err) {
           console.error("Unexpected error fetching categories:", err);
-        }
+        }finally{setLoading(false);}
       };
     
       fetchCategories();
@@ -252,7 +394,7 @@ const Dashboard = ({token}) => {
                 textAlign="left"
                 ml={3}
               >
-                Spending
+                Income
               </Typography>
               <Typography
                 fontSize={24}
@@ -261,10 +403,13 @@ const Dashboard = ({token}) => {
                 textAlign="left"
                 ml={3}
               >
-                $1,200
+                ₹
+                {incomeSourceDataForGraph
+                  .reduce((sum, item) => sum + parseFloat(item.value), 0)
+                  .toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Typography>
               <ResponsiveContainer width="100%" height="70%">
-                <LineChart data={incomeSourceData}>
+                <LineChart data={incomeSourceDataForGraph}>
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -306,10 +451,13 @@ const Dashboard = ({token}) => {
                 textAlign="left"
                 ml={3}
               >
-                $1,200
+                ₹
+                {incomeSourceDataForGraph2
+                  .reduce((sum, item) => sum + parseFloat(item.value), 0)
+                  .toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Typography>
               <ResponsiveContainer width="100%" height="70%">
-                <LineChart data={incomeSourceData}>
+                <LineChart data={incomeSourceDataForGraph2}>
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -381,15 +529,7 @@ const Dashboard = ({token}) => {
       {/* Recent Transactions */}
       <RecentTransactions />
 
-      {/* Notifications */}
-      <div className="w-full mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold text-red-400">
-          Alerts & Notifications
-        </h2>
-        <p className="text-lg text-yellow-300">
-          ⚠ 3 Bills are past due. Pay soon to avoid late fees.     ye sab nahi hoga humse bhai.........
-        </p>
-      </div>
+     
     </div>
   );
 };

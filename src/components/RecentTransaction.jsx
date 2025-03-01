@@ -7,7 +7,6 @@ const RecentTransactions = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        // Fetch income transactions from the "income" table
         const { data: incomeData, error: incomeError } = await supabase
           .from("income")
           .select("id, created_at, source, amount")
@@ -15,7 +14,6 @@ const RecentTransactions = () => {
 
         if (incomeError) throw incomeError;
 
-        // Fetch expense transactions from the "transactions" table (expenses)
         const { data: expenseData, error: expenseError } = await supabase
           .from("transactions")
           .select("id, transactiontime, categoryid, amount")
@@ -23,30 +21,41 @@ const RecentTransactions = () => {
 
         if (expenseError) throw expenseError;
 
-        // Combine income and expense data with a type
+        const categoryIds = [
+          ...new Set(expenseData.map((txn) => txn.categoryid)),
+        ];
+        const { data: categories, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name")
+          .in("id", categoryIds);
+
+        if (categoryError) throw categoryError;
+
+        const categoryMap = categories.reduce((map, category) => {
+          map[category.id] = category.name;
+          return map;
+        }, {});
+
         const combinedTransactions = [
           ...incomeData.map((txn) => ({
             ...txn,
-            type: "Income", // Label income transactions as "Income"
+            type: "Income",
             amount: txn.amount,
             created_at: txn.created_at,
-            category: txn.source, // Use source as category for income
+            category: txn.source,
           })),
           ...expenseData.map((txn) => ({
             ...txn,
-            type: "Expense", // Label expense transactions as "Expense"
+            type: "Expense",
             amount: txn.amount,
             created_at: txn.transactiontime,
-            category: txn.categoryid, // Assume category ID exists for expenses
-          }))
-        ];
+            category: categoryMap[txn.categoryid] || "Unknown",
+          })),
+        ]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 8); // Keep only the most recent 8 transactions
 
-        // Sort the combined transactions by created date
-        const sortedTransactions = combinedTransactions.sort((a, b) =>
-          new Date(b.created_at) - new Date(a.created_at)
-        );
-
-        setTransactions(sortedTransactions);
+        setTransactions(combinedTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
       }

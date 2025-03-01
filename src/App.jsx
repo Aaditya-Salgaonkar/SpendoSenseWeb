@@ -12,6 +12,7 @@ import AddIncome from "./screens/AddIncome";
 import HomeNav from "./components/HomeNav";
 import Asset from "./screens/Asset";
 import AddAssets from "./components/AddAssets";
+import PaymentScreen from "./screens/PaymentScreen";
 const App = () => {
   const [token, setToken] = useState(sessionStorage.getItem("token") || null);
 
@@ -40,6 +41,10 @@ const App = () => {
         <Route path="/addincome" element={token ? <AddIncome token={token} /> : <Navigate to="/login" />} />
         <Route path="/assets" element={token ? <Asset token={token} /> : <Navigate to="/login" />} />
         <Route path="/addassets" element={token ? <AddAssets token={token} /> : <Navigate to="/login" />} />
+        <Route
+          path="/payment"
+          element={token ? <PaymentScreen /> : <Navigate to="/login" />}
+        />
       </Routes>
     </BrowserRouter>
   );

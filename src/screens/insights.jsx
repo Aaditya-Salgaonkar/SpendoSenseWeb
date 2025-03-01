@@ -6,12 +6,14 @@ import GroupedBarChart from "@/components/GroupedBarChart";
 import ExpenseAnalyzer from "@/components/ExpenseAnalyzer";
 import InvestmentAvenues from "@/components/InvestmentAvenues";
 import HomeNav from "@/components/HomeNav";
-
+import ChatBot from "@/components/ChatBot";
+import ChatComponent from "@/components/chatComponent";
+import Spinner from "@/components/Spinner";
 const FinancialAdvice = () => {
   const [balance, setBalance] = useState(null);
   const [userId, setUserId] = useState(null);
    const [darkMode, setDarkMode] = useState(true);
-
+const [loading,setLoading]=useState(true);
   useEffect(() => {
     const fetchBalance = async () => {
       // 🔹 1️⃣ Get the current logged-in user
@@ -34,6 +36,7 @@ const FinancialAdvice = () => {
         console.error("Error fetching balance:", error);
       } else {
         setBalance(data?.totalbalance ?? 0); // ✅ Avoid setting undefined
+        setLoading(false)
       }
     };
 
@@ -49,15 +52,13 @@ const FinancialAdvice = () => {
       <div className="w-full mt-4">
     <HomeNav />
   </div>
-    <div className="flex justify-between bg-[#0a0f1c]"><h1 className="text-4xl text-white bg-[#0a0f1c] font-sans font-bold tracking-tighter px-3 py-2 sm:py-4 sm:px-4 lg:py-4">
+    {
+      loading?(<div className="flex-1 items-center justify-center"><Spinner /></div>):(<div><div className="flex justify-between bg-[#0a0f1c]"><h1 className="text-4xl text-white bg-[#0a0f1c] font-sans font-bold tracking-tighter px-3 py-2 sm:py-4 sm:px-4 lg:py-4">
         Finance Advisor
       </h1><div className="bg-[#0a0f1c] text-white px-6 py-6">
           <BudgetingCard />
         </div></div>
       
-      <h1 className="px-3 py-2 sm:py-4 sm:px-4 lg:py-6 lg:px-4 text-green-500 text-xl font-bold tracking-tighter bg-[#0a0f1c]">
-        Your Balance: <span className="font-bold">${balance ?? "Loading..."}</span>
-      </h1>
       <div className="min-h-screen flex flex-row justify-between bg-[#0a0f1c] p-10 h-full w-full gap-8">
         {/* Unnecessary Expenses --> Show a pie chart */}
         <UnnecessaryExpenses /> 
@@ -67,8 +68,11 @@ const FinancialAdvice = () => {
       <div className="min-h-screen flex flex-row justify-between bg-[#0a0f1c] p-10 h-full w-full gap-8">
      <ExpenseAnalyzer />
      <InvestmentAvenues />
-
+    <ChatBot />
+    
       </div>
+      <ChatComponent /></div>)
+    }
       
     </>
     </div>

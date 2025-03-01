@@ -17,14 +17,7 @@ export default function Navbar() {
       {/* Logo */}
       <div className="text-2xl font-bold text-blue-400">SpendoSense</div>
 
-      {/* Desktop Menu */}
-      <ul className="hidden md:flex gap-8 text-gray-300">
-        <li className="hover:text-blue-400 cursor-pointer transition">Home</li>
-        <li className="hover:text-blue-400 cursor-pointer transition">Features</li>
-        <li className="hover:text-blue-400 cursor-pointer transition">Pricing</li>
-        <li className="hover:text-blue-400 cursor-pointer transition">Testimonials</li>
-      </ul>
-
+      
       {/* Buttons */}
       <div className="hidden md:flex gap-4">
         <Button className="bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-800" onClick={()=>navigate('/login')}>Login</Button>
@@ -44,12 +37,7 @@ export default function Navbar() {
           transition={{ duration: 0.3 }}
           className="absolute top-16 left-0 w-full bg-[#0a0f1c] border-t border-gray-800 p-6 md:hidden"
         >
-          <ul className="flex flex-col gap-4 text-gray-300">
-            <li className="hover:text-blue-400 cursor-pointer transition">Home</li>
-            <li className="hover:text-blue-400 cursor-pointer transition">Features</li>
-            <li className="hover:text-blue-400 cursor-pointer transition">Pricing</li>
-            <li className="hover:text-blue-400 cursor-pointer transition">Testimonials</li>
-          </ul>
+          
           <div className="flex flex-col gap-4 mt-6">
             <Button className="bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-800" onClick={()=>navigate('/login')}>Login</Button>
             <Button className="bg-blue-600 hover:bg-blue-700" onClick={()=>navigate('/signup')}>Sign Up</Button>

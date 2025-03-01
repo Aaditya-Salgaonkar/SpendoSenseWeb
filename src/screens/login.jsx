@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft } from "@mui/icons-material";
+import Spinner from "@/components/Spinner";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -47,7 +49,8 @@ export default function LoginPage() {
         
         setTimeout(() => {
           navigate("/dashboard");
-          window.location.reload(); // Force refresh to ensure token update
+          //window.location.reload(); // Force refresh to ensure token update
+          setLoading(false);
         }, 1500);
       } else {
         throw new Error("Authentication failed. No session found.");
@@ -56,21 +59,29 @@ export default function LoginPage() {
       alert(error.message);
       console.error("Login Error:", error);
     } finally {
-      setLoading(false);
+      
     }
   }
   
 
   return (
-    <div className="min-h-screen bg-[#0a0f1c] text-white flex flex-col items-center px-6 md:px-16">
-      <motion.div
+    <div className="min-h-screen bg-[#0a0f1c] text-white flex flex-col justify-center items-center px-6 md:px-16">
+      
+      {
+        loading?(<div className="items-center justify-center"><Spinner /></div>):(
+          <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md mt-20"
+        className="w-full max-w-md "
       >
+        
         <Card className="p-8 bg-gray-900 shadow-lg rounded-xl">
+          
           <CardContent>
+          <Link to="/landingpage" className="flex items-center">
+      <ArrowLeft sx={{ fontSize: 32, color:'white' }} />
+    </Link>
             <h2 className="text-3xl font-bold text-center text-blue-400">Welcome Back</h2>
             <p className="text-gray-400 text-center">Log in to access your dashboard</p>
 
@@ -123,6 +134,8 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </motion.div>
+        )
+      }
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase"; // Ensure correct path
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import Spinner from "./Spinner";
 
 const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#4CAF50", "#9C27B0"];
 
@@ -88,11 +89,11 @@ const UnnecessaryExpenses = () => {
   }, []);
 
   return (
-    <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white h-1/3 w-1/3">
-      <h2 className="text-xl font-bold mb-4 mt-3 px-14 text-center py-4-">Unnecessary Expenses</h2>
+    <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white h-[480px] w-[480px]">
+      <h2 className="text-3xl font-bold  mt-3 px-10 text-center ">Unnecessary Expenses</h2>
 
       {loading ? (
-        <p>Loading...</p>
+         <div className="flex-1 items-center justify-center"><Spinner /></div>
       ) : transactions.length === 0 ? (
         <p>No unnecessary expenses found.</p>
       ) : (

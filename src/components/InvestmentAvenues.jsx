@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "../supabase";
+import Spinner from "./Spinner";
 
 const InvestmentAvenues = () => {
   const [investmentData, setInvestmentData] = useState([]);
@@ -91,11 +92,11 @@ const InvestmentAvenues = () => {
 
   return (
     <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white w-1/2 border border-white  ">
-      <h2 className="text-xl font-bold mb-4 text-center">📊 Investment Avenues</h2>
+      <h2 className="text-3xl font-bold mb-4 text-center">Investment Avenues</h2>
 
      <div>
       {loading ? (
-        <p>Loading...</p>
+<div className="flex-1 items-center justify-center"><Spinner /></div>
       ) : investmentData.length === 0 ? (
         <p>No data available.</p>
       ) : (

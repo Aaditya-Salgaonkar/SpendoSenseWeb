@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase"; // Adjust path if needed
+import Spinner from "./Spinner";
 
 const ExpenseAnalyzer = () => {
   const [userId, setUserId] = useState(null);
@@ -108,13 +109,13 @@ const ExpenseAnalyzer = () => {
 
   return (
     <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white w-1/2 border border-white">
-      <h2 className="text-xl font-bold mb-4 text-center">Expense Analyzer</h2>
+      <h2 className="text-3xl font-bold mb-4 text-center">Expense Analyzer</h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex-1 items-center justify-center"><Spinner /></div>
       ) : (
         <>
-          <p className="mb-4 text-green-500">Total Monthly Income: ₹{monthlyIncome}</p>
+          <p className="mb-4 text-blue-700 font-bold">Total Monthly Income: ₹{monthlyIncome}</p>
 
           {/* ⚠️ Flagged Categories (Overspending) */}
           <h3 className="text-lg font-semibold">⚠️ Categories Where You Should Cut Expenses:</h3>
