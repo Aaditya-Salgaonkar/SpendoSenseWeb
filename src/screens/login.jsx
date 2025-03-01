@@ -49,7 +49,7 @@ export default function LoginPage() {
         
         setTimeout(() => {
           navigate("/dashboard");
-          //window.location.reload(); // Force refresh to ensure token update
+          window.location.reload(); // Force refresh to ensure token update
           setLoading(false);
         }, 1500);
       } else {
