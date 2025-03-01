@@ -7,7 +7,7 @@ import ExpenseAnalyzer from "@/components/ExpenseAnalyzer";
 import InvestmentAvenues from "@/components/InvestmentAvenues";
 import HomeNav from "@/components/HomeNav";
 import ChatBot from "@/components/ChatBot";
-import ChatComponent from "@/components/chatComponent";
+import ChatComponent from "@/components/ChatComponent";
 import Spinner from "@/components/Spinner";
 const FinancialAdvice = () => {
   const [balance, setBalance] = useState(null);
