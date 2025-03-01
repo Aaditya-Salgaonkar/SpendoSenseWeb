@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import SignUp from "./screens/signup";
 import Login from "./screens/login";
-import Dashboard from "./screens/Dashboard";
+import Dashboard from "./screens/dashboard";
 import LandingPage from "./screens/LandingPage";
 import Expenses from "./screens/expenses";
 import Insights from "./screens/insights";
