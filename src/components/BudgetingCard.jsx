@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Card,
   CardContent,
   CardHeader,
   CardTitle,
@@ -28,6 +27,7 @@ import {
 const BudgetingDialog = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -36,24 +36,29 @@ const BudgetingDialog = () => {
   // Fetch Categories and User ID
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user) {
-        console.error("Error fetching user:", userError);
+      try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) {
+          console.error("Error fetching user:", userError);
+          setLoading(false);
+          return;
+        }
+
+        const currentUserId = userData.user.id;
+        setUserId(currentUserId);
+
+        const { data, error } = await supabase.from("categories").select("id, name");
+
+        if (error) {
+          console.error("Error fetching categories:", error);
+        } else {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const currentUserId = userData.user.id;
-      setUserId(currentUserId);
-
-      const { data, error } = await supabase.from("categories").select("id, name");
-
-      if (error) {
-        console.error("Error fetching categories:", error);
-      } else {
-        setCategories(data);
-      }
-      setLoading(false);
     };
 
     fetchCategories();
@@ -65,23 +70,32 @@ const BudgetingDialog = () => {
       alert("Please select a category and enter an amount.");
       return;
     }
+    if (isNaN(amount) || parseFloat(amount) <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
 
-    const { data, error } = await supabase.from("budgets").insert([
-      {
-        userid: userId, // Matching your DB nomenclature
-        categoryid: selectedCategory, // Matching your DB nomenclature
-        amount: parseFloat(amount), // Ensure numeric value
-      },
-    ]);
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("budgets").insert([
+        {
+          userid: userId,
+          categoryid: selectedCategory,
+          amount: parseFloat(amount),
+        },
+      ]);
 
-    if (error) {
-      console.error("Error saving budget:", error);
-      alert("Failed to save budget. Please try again.");
-    } else {
+      if (error) throw error;
+
       alert("Budget saved successfully!");
       setOpen(false);
       setSelectedCategory("");
       setAmount("");
+    } catch (error) {
+      console.error("Error saving budget:", error);
+      alert("Failed to save budget. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -101,13 +115,13 @@ const BudgetingDialog = () => {
           </DialogHeader>
           
           <CardContent>
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
               <div className="grid w-full items-center gap-4">
                 
                 {/* Category Selection */}
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="categories">Category</Label>
-                  <Select onValueChange={setSelectedCategory}>
+                  <Select onValueChange={setSelectedCategory} disabled={loading}>
                     <SelectTrigger id="categories">
                       <SelectValue placeholder={loading ? "Loading..." : "Select a category"} />
                     </SelectTrigger>
@@ -130,7 +144,14 @@ const BudgetingDialog = () => {
                 {/* Amount Input */}
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="amount">Amount</Label>
-                  <Input id="amount" placeholder="Enter the amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                  <Input
+                    id="amount"
+                    placeholder="Enter the amount"
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    required
+                  />
                 </div>
 
               </div>
@@ -140,7 +161,9 @@ const BudgetingDialog = () => {
           {/* Dialog Footer */}
           <DialogFooter className="flex justify-end">
             <Button variant="outline" className='text-black' onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveBudget}>Save Budget</Button>
+            <Button onClick={handleSaveBudget} disabled={saving}>
+              {saving ? "Saving..." : "Save Budget"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

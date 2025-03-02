@@ -65,9 +65,9 @@ const RecentTransactions = () => {
   }, []);
 
   return (
-    <div className="w-full mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold text-yellow-400">Recent Transactions</h2>
-      <table className="w-full mt-4">
+    <div className="w-full mt-8 bg-[#171c3a] p-6 rounded-3xl shadow-lg">
+      <h2 className="text-3xl font-bold text-yellow-400 ">Recent Transactions</h2>
+      <table className="w-full mt-6">
         <thead>
           <tr className="text-left border-b border-gray-700">
             <th className="p-2">Date</th>

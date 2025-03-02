@@ -10,11 +10,12 @@ const AddTransaction = () => {
     amount: "",
     merchantName: "",
     categoryid: "",
-    transactiontime: new Date().toISOString().slice(0, 16), // Default to current time
-    isincome: false, // Add this new field
+    transactiontime: new Date().toISOString().slice(0, 16),
+    isincome: false,
   });
 
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false); // Track submission status
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -25,16 +26,11 @@ const AddTransaction = () => {
         setCategories(data || []);
       }
     };
-
     fetchCategories();
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleToggleIncomeExpense = () => {
-    setFormData({ ...formData, isincome: !formData.isincome });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
@@ -43,120 +39,89 @@ const AddTransaction = () => {
       alert("Please fill in all required fields.");
       return;
     }
-  
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error("Error fetching user:", authError);
+    if (parseFloat(formData.amount) <= 0) {
+      alert("Amount must be greater than zero.");
       return;
     }
-  
+
+    setLoading(true);
+
+    const { data: userData, error: authError } = await supabase.auth.getUser();
+    if (authError || !userData?.user) {
+      console.error("Authentication error:", authError);
+      setLoading(false);
+      return;
+    }
+
+    const userId = userData.user.id;
+
     try {
-      // Insert transaction as an expense (isincome: false)
-      const { data, error: transactionError } = await supabase.from("transactions").insert([
+      const { data: transactionData, error: transactionError } = await supabase.from("transactions").insert([
         {
-          userid: user.id,
+          userid: userId,
           upiid: formData.upiid,
           amount: parseFloat(formData.amount),
           merchantName: formData.merchantName,
           categoryid: formData.categoryid,
           transactiontime: formData.transactiontime,
-          isincome: false, // Setting to false for expenses
+          isincome: formData.isincome,
         },
       ]);
-      console.log('transaction data:', data);
+
       if (transactionError) {
         console.error("Error adding transaction:", transactionError);
+        alert("Transaction failed. Please try again.");
+        setLoading(false);
         return;
       }
-  
-      // Deduct from user's balance
-      const { data: userData, error: userError } = await supabase
+
+      // Deduct balance only if the transaction was successful
+      const { data: userBalanceData, error: balanceError } = await supabase
         .from("users")
         .select("totalbalance")
-        .eq("id", user.id)
+        .eq("id", userId)
         .single();
-  
-      if (userError) {
-        console.error("Error fetching user balance:", userError);
+
+      if (balanceError) {
+        console.error("Error fetching user balance:", balanceError);
+        setLoading(false);
         return;
       }
-  
-      const newBalance = parseFloat(userData.totalbalance) - parseFloat(formData.amount);
-  
-      // Update user's balance
+
+      const newBalance = parseFloat(userBalanceData.totalbalance) - parseFloat(formData.amount);
+
       const { error: updateBalanceError } = await supabase
         .from("users")
         .update({ totalbalance: newBalance })
-        .eq("id", user.id);
-  
+        .eq("id", userId);
+
       if (updateBalanceError) {
         console.error("Error updating user balance:", updateBalanceError);
+        setLoading(false);
         return;
       }
-  
-      // Fetch current total spent from analytics
-      const currentMonth = new Date().getMonth() + 1;
-      const currentYear = new Date().getFullYear();
-  
-      const { data: analyticsData, error: analyticsError } = await supabase
-        .from("analytics")
-        .select("totalspent")
-        .eq("userid", user.id)
-        .eq("month", currentMonth)
-        .eq("year", currentYear)
-        .single();
-  
-      let newTotalSpent = parseFloat(formData.amount);
-      if (analyticsData) {
-        newTotalSpent += analyticsData.totalspent || 0;
-      }
-  
-      if (analyticsError && analyticsError.code !== "PGRST116") {
-        console.error("Error fetching analytics data:", analyticsError);
-        return;
-      }
-  
-      // Update analytics table
-      if (analyticsData) {
-        await supabase
-          .from("analytics")
-          .update({ totalspent: newTotalSpent })
-          .eq("userid", user.id)
-          .eq("month", currentMonth)
-          .eq("year", currentYear);
-      } else {
-        await supabase.from("analytics").insert([
-          {
-            userid: user.id,
-            month: currentMonth,
-            year: currentYear,
-            totalspent: newTotalSpent,
-            topcategory: formData.categoryid,
-            savings: 0, // Assuming savings calculation is separate
-          },
-        ]);
-      }
-  
-      alert("Expense added and balance updated successfully!");
+
+      alert("Transaction added successfully!");
       setFormData({
         upiid: "",
         amount: "",
         merchantName: "",
         categoryid: "",
         transactiontime: new Date().toISOString().slice(0, 16),
-        status: "Completed",
+        isincome: false,
       });
-  
+
       navigate(-1);
     } catch (err) {
       console.error("Unexpected error:", err);
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex h-screen items-center justify-center p-10 bg-[#0a0f1c]">
-      <div className="p-8 rounded-lg shadow-lg shadow-blue-800 bg-opacity-5 w-1/3">
+      <div className="p-8 rounded-lg shadow-lg shadow-blue-800 bg-opacity-5 w-full max-w-md">
         <h2 className="text-xl bg-gradient-to-r from-blue-500 to-black font-semibold mb-4 text-transparent bg-clip-text">
           Add Transaction
         </h2>
@@ -202,7 +167,9 @@ const AddTransaction = () => {
             className="p-2 border rounded hover:border-green-400"
             required
           >
-            <option value="" disabled>Select Category</option>
+            <option value="" disabled>
+              Select a category
+            </option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -210,15 +177,16 @@ const AddTransaction = () => {
             ))}
           </select>
 
-         
-
           <motion.button
             type="submit"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-2 bg-blue-800 text-white rounded"
+            disabled={loading}
+            whileHover={!loading ? { scale: 1.05 } : {}}
+            whileTap={!loading ? { scale: 0.95 } : {}}
+            className={`p-2 text-white rounded ${
+              loading ? "bg-gray-600 cursor-not-allowed" : "bg-blue-800 hover:bg-blue-900"
+            }`}
           >
-            Submit
+            {loading ? "Processing..." : "Submit"}
           </motion.button>
         </form>
       </div>

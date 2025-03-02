@@ -3,61 +3,52 @@ import { motion } from "framer-motion";
 import { supabase } from "../supabase";
 import { useNavigate } from "react-router-dom";
 
+const categories = [
+  { id: "1", name: "Property" },
+  { id: "2", name: "Vehicle" },
+  { id: "3", name: "Stocks" },
+  { id: "4", name: "Savings" },
+  { id: "5", name: "Others" },
+];
+
 const AddAsset = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    category: "",
-    value: "",
-  });
-
-  const [categories] = useState([
-    { id: "1", name: "Property" },
-    { id: "2", name: "Vehicle" },
-    { id: "3", name: "Stocks" },
-    { id: "4", name: "Savings" },
-    { id: "5", name: "Others" },
-  ]);
+  const [formData, setFormData] = useState({ category: "", value: "" });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!formData.category || !formData.value) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error("Error fetching user:", authError);
+    const value = parseFloat(formData.value);
+    if (isNaN(value) || value <= 0) {
+      alert("Please enter a valid asset value.");
       return;
     }
 
     try {
-      const { data, error: assetError } = await supabase.from("asset_distribution").insert([
-        {
-          userid: user.id, // Ensure we're sending the correct UUID
-          category: formData.category, // Use the category name instead of id
-          value: parseFloat(formData.value), // Ensure it's a numeric value
-        },
-      ]);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error("Error fetching user");
 
-      if (assetError) {
-        console.error("Error adding asset:", assetError.message || assetError);
-        return;
-      }
+      const { error: assetError } = await supabase
+        .from("asset_distribution")
+        .insert([{ userid: user.id, category: formData.category, value }]);
+
+      if (assetError) throw new Error(assetError.message);
 
       alert("Asset added successfully!");
-      setFormData({
-        category: "",
-        value: "",
-      });
-
-      navigate(-1); // Navigate back after adding the asset
-    } catch (err) {
-      console.error("Unexpected error:", err);
+      setFormData({ category: "", value: "" });
+      navigate(-1);
+    } catch (error) {
+      console.error("Error:", error.message);
+      alert("Something went wrong. Please try again.");
     }
   };
 
@@ -85,10 +76,8 @@ const AddAsset = () => {
             required
           >
             <option value="" disabled>Select Category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.name}>
-                {category.name}
-              </option>
+            {categories.map(({ id, name }) => (
+              <option key={id} value={name}>{name}</option>
             ))}
           </select>
 

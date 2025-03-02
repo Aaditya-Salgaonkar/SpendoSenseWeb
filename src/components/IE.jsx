@@ -13,71 +13,74 @@ import {
 } from "recharts";
 
 const IncomeVsExpenses = () => {
-  const [incomeExpensesData, setIncomeExpensesData] = useState([]);
-  const [incomeSourceDataForGraph, setIncomeSourceDataForGraph] = useState([]);
-  useEffect(() => {
-    console.log("Fetching income and spend data...");
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
     const fetchIncomeAndSpendData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         const {
           data: { user },
-          error: useError,
-        } = await supabase.auth._getUser();
+          error: userError,
+        } = await supabase.auth.getUser();
 
-        if (useError || !user) {
-          console.error("Error fetching user:", useError);
-          return;
+        if (userError || !user) {
+          throw new Error("User not found. Please log in again.");
         }
 
-        const { data: incomeData, error: incomeError } = await supabase
-          .from("income")
-          .select("amount, created_at")
-          .eq("userId", user.id)
-          .order("created_at", { ascending: true });
+        const [{ data: incomeData, error: incomeError }, { data: expenseData, error: expenseError }] =
+          await Promise.all([
+            supabase
+              .from("income")
+              .select("amount, created_at")
+              .eq("userId", user.id)
+              .order("created_at", { ascending: true }),
+
+            supabase
+              .from("transactions")
+              .select("amount, transactiontime")
+              .eq("userid", user.id)
+              .order("transactiontime", { ascending: true }),
+          ]);
 
         if (incomeError) throw incomeError;
-
-        const { data: expenseData, error: expenseError } = await supabase
-          .from("transactions")
-          .select("amount, transactiontime")
-          .eq("userid", user.id)
-          .order("transactiontime", { ascending: true });
-
         if (expenseError) throw expenseError;
 
-        console.log("Fetched income data:", incomeData);
-        console.log("Fetched spend data:", expenseData);
+        console.log("Income Data:", incomeData);
+        console.log("Expense Data:", expenseData);
 
-        const mergedData = {};
+        // Merge Data
+        const mergedData = new Map();
 
-        // Format income data
-        incomeData.forEach((item) => {
-          const date = new Date(item.created_at).toLocaleDateString();
-          if (!mergedData[date]) {
-            mergedData[date] = { date, income: 0, expense: 0 };
-          }
-          mergedData[date].income += Number(item.amount);
+        incomeData.forEach(({ created_at, amount }) => {
+          const date = new Date(created_at).toLocaleDateString();
+          const entry = mergedData.get(date) || { date, income: 0, expense: 0 };
+          entry.income += Number(amount);
+          mergedData.set(date, entry);
         });
 
-        // Format expense data
-        expenseData.forEach((item) => {
-          const date = new Date(item.transactiontime).toLocaleDateString();
-          if (!mergedData[date]) {
-            mergedData[date] = { date, income: 0, expense: 0 };
-          }
-          mergedData[date].expense += Number(item.amount);
+        expenseData.forEach(({ transactiontime, amount }) => {
+          const date = new Date(transactiontime).toLocaleDateString();
+          const entry = mergedData.get(date) || { date, income: 0, expense: 0 };
+          entry.expense += Number(amount);
+          mergedData.set(date, entry);
         });
 
-        // Convert merged object to array
-        const combinedData = Object.values(mergedData).sort(
+        // Convert to sorted array
+        const sortedData = Array.from(mergedData.values()).sort(
           (a, b) => new Date(a.date) - new Date(b.date)
         );
 
-        console.log("Combined income and expense data:", combinedData);
-        setIncomeSourceDataForGraph(combinedData);
+        setChartData(sortedData);
       } catch (err) {
-        console.error("Error fetching income or spend data:", err.message);
+        console.error("Error fetching income or expenses:", err.message);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -85,56 +88,45 @@ const IncomeVsExpenses = () => {
   }, []);
 
   return (
-    <div className="bg-[#171c3a] p-3 rounded-lg shadow-lg flex flex-col justify-center">
-      <h2 className="text-2xl font-bold text-white mb-4">
-        Income vs Expenses (Over Time)
-      </h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={incomeSourceDataForGraph}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" />
-          <XAxis dataKey="date" stroke="#ffffff" />
+    <div className="bg-[#171c3a] p-7 rounded-3xl shadow-lg">
+      <h2 className="text-3xl font-bold text-[#FFD700] mb-10">Income vs Expenses </h2>
 
-          <YAxis
-            stroke="#ffffff"
-            domain={["auto", "auto"]} // Auto-scale for dynamic range
-            tickCount={10} // More ticks for finer granularity
-          />
+      {loading ? (
+        <p className="text-white">Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" />
+            <XAxis dataKey="date" stroke="#ffffff" />
+            <YAxis stroke="#ffffff" tickCount={6} domain={["auto", "auto"]} />
+            <Tooltip
+              contentStyle={{ backgroundColor: "#1e293b", color: "#ffffff", borderRadius: "5px" }}
+            />
+            <Legend />
+            <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="3 3" />
 
-          <Tooltip />
-          <Legend />
-          <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="3 3" />
+            <Line
+              type="monotone"
+              dataKey="income"
+              stroke="#4CAF50"
+              strokeWidth={3}
+              dot={{ r: 5, fill: "#4CAF50", strokeWidth: 2, stroke: "#ffffff" }}
+              activeDot={{ r: 7, fill: "#fff", stroke: "#4CAF50", strokeWidth: 3 }}
+            />
 
-          <Line
-            type="monotone"
-            dataKey="income"
-            stroke="#4CAF50"
-            strokeWidth={4}
-            dot={{ r: 6, fill: "#4CAF50", strokeWidth: 2, stroke: "#ffffff" }}
-            activeDot={{
-              r: 8,
-              fill: "#fff",
-              stroke: "#4CAF50",
-              strokeWidth: 3,
-            }}
-            isAnimationActive={true}
-          />
-
-          <Line
-            type="monotone"
-            dataKey="expense"
-            stroke="#F44336"
-            strokeWidth={4}
-            dot={{ r: 6, fill: "#F44336", strokeWidth: 2, stroke: "#ffffff" }}
-            activeDot={{
-              r: 8,
-              fill: "#fff",
-              stroke: "#F44336",
-              strokeWidth: 3,
-            }}
-            isAnimationActive={true}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+            <Line
+              type="monotone"
+              dataKey="expense"
+              stroke="#F44336"
+              strokeWidth={3}
+              dot={{ r: 5, fill: "#F44336", strokeWidth: 2, stroke: "#ffffff" }}
+              activeDot={{ r: 7, fill: "#fff", stroke: "#F44336", strokeWidth: 3 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 };

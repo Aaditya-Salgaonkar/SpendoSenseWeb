@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { supabase } from "../supabase"; // Adjust path if needed
+import React, { useEffect, useState, useCallback } from "react";
+import { supabase } from "../supabase";
 import Spinner from "./Spinner";
 
 const ExpenseAnalyzer = () => {
@@ -8,23 +8,21 @@ const ExpenseAnalyzer = () => {
   const [categoryMap, setCategoryMap] = useState({});
   const [expenses, setExpenses] = useState([]);
   const [flaggedCategories, setFlaggedCategories] = useState([]);
-  const [goodCategories, setGoodCategories] = useState([]); // ✅ New state for good categories
+  const [goodCategories, setGoodCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // ✅ New error state
 
-  // ✅ Hardcoded "Good" Categories (Only these will be considered)
   const goodCategoryNames = ["Healthcare", "Education", "Investments", "Self-Development"];
 
-  useEffect(() => {
-    const fetchExpenseData = async () => {
+  const fetchExpenseData = useCallback(async () => {
+    try {
       setLoading(true);
+      setError(null);
 
       // 1️⃣ Get Logged-in User
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user) {
-        console.error("Error fetching user:", userError);
-        setLoading(false);
-        return;
-      }
+      if (userError || !userData?.user) throw new Error("Failed to fetch user data.");
+      
       const currentUserId = userData.user.id;
       setUserId(currentUserId);
 
@@ -34,118 +32,110 @@ const ExpenseAnalyzer = () => {
         .select("monthlyincome")
         .eq("id", currentUserId)
         .single();
+      if (incomeError || !userIncomeData) throw new Error("Failed to fetch monthly income.");
 
-      if (incomeError || !userIncomeData) {
-        console.error("Error fetching income:", incomeError);
-        setLoading(false);
-        return;
-      }
       setMonthlyIncome(userIncomeData.monthlyincome);
 
-      // 3️⃣ Fetch Category Names (ID → Name Mapping)
+      // 3️⃣ Fetch Category Names
       const { data: categoriesData, error: categoryError } = await supabase
         .from("categories")
         .select("id, name");
+      if (categoryError || !categoriesData) throw new Error("Failed to fetch category names.");
 
-      if (categoryError || !categoriesData) {
-        console.error("Error fetching categories:", categoryError);
-        setLoading(false);
-        return;
-      }
-
-      // Create a category ID → Name map
-      const categoryMapping = {};
-      categoriesData.forEach((category) => {
-        categoryMapping[category.id] = category.name;
-      });
+      const categoryMapping = Object.fromEntries(categoriesData.map(({ id, name }) => [id, name]));
       setCategoryMap(categoryMapping);
 
-      // 4️⃣ Fetch Transactions for the User
+      // 4️⃣ Fetch Transactions
       const { data: transactionsData, error: transactionsError } = await supabase
         .from("transactions")
         .select("categoryid, amount")
         .eq("userid", currentUserId);
+      if (transactionsError) throw new Error("Failed to fetch transactions.");
 
-      if (transactionsError) {
-        console.error("Error fetching transactions:", transactionsError);
-        setLoading(false);
-        return;
-      }
+      // 5️⃣ Aggregate Expenses
+      const categoryExpenses = transactionsData.reduce((acc, { categoryid, amount }) => {
+        acc[categoryid] = (acc[categoryid] || 0) + amount;
+        return acc;
+      }, {});
 
-      // 5️⃣ Aggregate Expenses by Category
-      const categoryExpenses = {};
-      transactionsData.forEach((transaction) => {
-        const categoryId = transaction.categoryid;
-        if (!categoryExpenses[categoryId]) {
-          categoryExpenses[categoryId] = 0;
-        }
-        categoryExpenses[categoryId] += transaction.amount;
-      });
-
-      // Convert aggregated data to displayable format
-      const expenseList = Object.keys(categoryExpenses).map((categoryId) => ({
+      const expenseList = Object.entries(categoryExpenses).map(([categoryId, spent]) => ({
         category: categoryMapping[categoryId] || `Category ${categoryId}`,
-        spent: categoryExpenses[categoryId],
-        percentage: ((categoryExpenses[categoryId] / userIncomeData.monthlyincome) * 100).toFixed(2),
+        spent,
+        percentage: ((spent / userIncomeData.monthlyincome) * 100).toFixed(2),
       }));
 
       setExpenses(expenseList);
 
-      // 6️⃣ Flag Categories Where Spending > 30% of Income
-      const flagged = expenseList.filter((expense) => expense.percentage > 30);
-      setFlaggedCategories(flagged);
+      // 6️⃣ Flag Categories (Overspending > 30% of Income)
+      setFlaggedCategories(expenseList.filter(({ percentage }) => percentage > 30));
 
-      // 7️⃣ Identify Good Categories (Spending < 20% of Income and in predefined list)
-      const good = expenseList.filter(
-        (expense) => expense.percentage < 20 && goodCategoryNames.includes(expense.category)
-      );
-      setGoodCategories(good);
+      // 7️⃣ Identify Good Categories (Spending < 20% & in predefined list)
+      setGoodCategories(expenseList.filter(({ percentage, category }) => percentage < 20 && goodCategoryNames.includes(category)));
 
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    };
-
-    fetchExpenseData();
+    }
   }, []);
 
+  useEffect(() => {
+    fetchExpenseData();
+  }, [fetchExpenseData]);
+
   return (
-    <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white w-1/2 border border-white">
+    <div className="bg-gray-900 p-5 rounded-lg shadow-md text-white w-full sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto">
       <h2 className="text-3xl font-bold mb-4 text-center">Expense Analyzer</h2>
 
       {loading ? (
-        <div className="flex-1 items-center justify-center"><Spinner /></div>
+        <div className="flex justify-center py-10">
+          <Spinner />
+        </div>
+      ) : error ? (
+        <p className="text-red-500 text-center">{error}</p>
       ) : (
         <>
-          <p className="mb-4 text-blue-700 font-bold">Total Monthly Income: ₹{monthlyIncome}</p>
+          <p className="mb-4 text-blue-500 font-bold text-center">Total Monthly Income: ₹{monthlyIncome}</p>
 
           {/* ⚠️ Flagged Categories (Overspending) */}
-          <h3 className="text-lg font-semibold">⚠️ Categories Where You Should Cut Expenses:</h3>
+          <h3 className="text-lg font-semibold">⚠️ Cut Down on These Categories:</h3>
           {flaggedCategories.length === 0 ? (
-            <p className="text-green-400">Great! No category exceeds 30% of your income. 🎉</p>
+            <p className="text-green-400 text-center">Great! No category exceeds 30% of your income. 🎉</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 mt-4">
-              {flaggedCategories.map((expense, index) => (
-                <div key={index} className="bg-red-300/10 p-4 rounded-lg border border-red-500 shadow-md hover:bg-red-500">
-                  <h4 className="text-red-400 text-lg font-semibold">{expense.category}</h4>
-                  <p>Spent: ₹{expense.spent}</p>
-                  <p>({expense.percentage}% of income)</p>
-                </div>
-              ))}
+            <div className="overflow-y-auto max-h-64 mt-4">
+              <div className="grid grid-cols-1 gap-4">
+                {flaggedCategories.map(({ category, spent, percentage }, index) => (
+                  <div
+                    key={index}
+                    className="bg-red-500/10 p-4 rounded-lg border border-red-500 shadow-md hover:bg-red-600/30 transition-all"
+                  >
+                    <h4 className="text-red-400 text-lg font-semibold">{category}</h4>
+                    <p>Spent: ₹{spent}</p>
+                    <p>({percentage}% of income)</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* ✅ Good Categories (Encourage Spending) */}
-          <h3 className="text-lg font-semibold mt-6">✅ Areas to Spend More:</h3>
+          {/* ✅ Good Categories (Encouraged Spending) */}
+          <h3 className="text-lg font-semibold mt-6">✅ Consider Spending More:</h3>
           {goodCategories.length === 0 ? (
-            <p className="text-yellow-400">You're not under-spending in key areas.</p>
+            <p className="text-yellow-400 text-center">You're not under-spending in key areas.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 mt-4">
-              {goodCategories.map((expense, index) => (
-                <div key={index} className="bg-green-300/10 p-4 rounded-lg border border-green-500 shadow-md hover:bg-green-600">
-                  <h4 className="text-green-400 text-lg font-semibold">{expense.category}</h4>
-                  <p>Spent: ₹{expense.spent}</p>
-                  <p>({expense.percentage}% of income)</p>
-                </div>
-              ))}
+            <div className="overflow-y-auto max-h-64 mt-4">
+              <div className="grid grid-cols-1 gap-4">
+                {goodCategories.map(({ category, spent, percentage }, index) => (
+                  <div
+                    key={index}
+                    className="bg-green-500/10 p-4 rounded-lg border border-green-500 shadow-md hover:bg-green-600/30 transition-all"
+                  >
+                    <h4 className="text-green-400 text-lg font-semibold">{category}</h4>
+                    <p>Spent: ₹{spent}</p>
+                    <p>({percentage}% of income)</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </>

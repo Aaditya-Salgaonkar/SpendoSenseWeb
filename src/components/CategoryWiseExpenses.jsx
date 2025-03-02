@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { supabase } from "../../src/supabase";
-import { ThemeProvider, createTheme, Box, Typography } from "@mui/material";
+import { ThemeProvider, createTheme, Box, Typography, CircularProgress } from "@mui/material";
 
 // Dark Mode Theme
 const darkTheme = createTheme({
@@ -18,47 +18,66 @@ const darkTheme = createTheme({
   },
 });
 
-const COLORS = ["#F72585", "#7209B7", "#560BAD", "#480CA8", "#B5179E"];
+// Dynamic Color Palette for More Categories
+const generateColorPalette = (count) => {
+  const colors = ["#F72585", "#7209B7", "#560BAD", "#480CA8", "#B5179E"];
+  return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+};
 
 const CategoryWiseExpenses = () => {
   const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     const fetchCategoryWiseExpenses = async () => {
-      const { data: userData, error: authError } = await supabase.auth.getUser();
-      const user = userData?.user;
+      setLoading(true);
+      setErrorMsg("");
 
-      if (!user || authError) {
-        console.error("Error while accessing user data", authError);
-        return;
+      try {
+        // Fetch authenticated user
+        const { data: userData, error: authError } = await supabase.auth.getUser();
+        if (authError || !userData?.user) {
+          throw new Error("Failed to retrieve user data.");
+        }
+
+        const user = userData.user;
+
+        // Fetch user expenses
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("category, amount")
+          .eq("freelancer_id", user.id);
+
+        if (error || !data?.length) {
+          throw new Error("No expense data available.");
+        }
+
+        // Aggregate category-wise expenses
+        const categoryMap = data.reduce((acc, { category, amount }) => {
+          acc[category] = (acc[category] || 0) + amount;
+          return acc;
+        }, {});
+
+        setChartData(
+          Object.entries(categoryMap).map(([category, value]) => ({
+            name: category,
+            value,
+          }))
+        );
+      } catch (error) {
+        setErrorMsg(error.message);
+        setChartData([]);
+      } finally {
+        setLoading(false);
       }
-
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("category, amount")
-        .eq("freelancer_id", user.id);
-
-      if (error || !data) {
-        console.error("Error fetching expenses or no data found:", error);
-        return;
-      }
-
-      // Aggregate category-wise expenses
-      const categoryMap = data.reduce((acc, { category, amount }) => {
-        acc[category] = (acc[category] || 0) + amount;
-        return acc;
-      }, {});
-
-      setChartData(
-        Object.keys(categoryMap).map((category) => ({
-          name: category,
-          value: categoryMap[category],
-        }))
-      );
     };
 
     fetchCategoryWiseExpenses();
-  }, [supabase]);
+  }, []);
+
+  // Memoize Colors
+  const colors = useMemo(() => generateColorPalette(chartData.length), [chartData.length]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -66,11 +85,19 @@ const CategoryWiseExpenses = () => {
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Expenses
         </Typography>
-        {chartData.length > 0 ? (
+
+        {/* Show Loading Indicator */}
+        {loading ? (
+          <CircularProgress color="secondary" />
+        ) : errorMsg ? (
+          <Typography variant="h6" color="error">
+            {errorMsg}
+          </Typography>
+        ) : chartData.length > 0 ? (
           <PieChart width={500} height={500}>
             <Pie data={chartData} cx={250} cy={250} outerRadius={150} dataKey="value" label>
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell key={`cell-${index}`} fill={colors[index]} />
               ))}
             </Pie>
             <Tooltip />

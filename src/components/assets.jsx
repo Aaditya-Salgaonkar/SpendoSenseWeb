@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabase"; // Assuming you have your Supabase client set up
+import { supabase } from "../supabase";
 import {
   PieChart,
   Pie,
@@ -8,11 +8,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import IncomeVsExpenses from "./IE"; // Assuming the IncomeVsExpenses component is already created
+import IncomeVsExpenses from "./IE";
 
 const COLORS = [
-  "#FF6347", "#FFBB28", "#00C49F", "#0088FE", "#FF8042", "#8A2BE2", "#FF69B4", "#32CD32", "#00CED1", "#FF4500"
-]; // Premium color palette for the pie chart
+  "#FF6347", "#FFBB28", "#00C49F", "#0088FE", "#FF8042",
+  "#8A2BE2", "#FF69B4", "#32CD32", "#00CED1", "#FF4500"
+];
 
 const AssetDistribution = () => {
   const [assetData, setAssetData] = useState([]);
@@ -20,40 +21,49 @@ const AssetDistribution = () => {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
 
-  // Fetch asset data function, moved outside useEffect
-  const fetchAssetData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data, error } = await supabase
-        .from("asset_distribution")
-        .select("category, value")
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-
-      // Format the data for the Pie Chart
-      const formattedData = data.map((item) => ({
-        name: item.category,
-        value: item.value,
-      }));
-
-      console.log("Asset Distribution Data:", formattedData);
-      setAssetData(formattedData);
-    } catch (error) {
-      console.error("Error fetching asset distribution:", error);
-      setError("Failed to load asset distribution data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch data on mount
+  // Fetch the authenticated user
   useEffect(() => {
-    fetchAssetData();
+    const fetchUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        setError("Error fetching user data.");
+        return;
+      }
+      setUserId(user.id);
+    };
+    fetchUser();
   }, []);
+
+  // Fetch asset data for the logged-in user
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchAssetData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const { data, error } = await supabase
+          .from("asset_distribution")
+          .select("category, value")
+          .eq("userid", userId) // Fetch only the current user's assets
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        setAssetData(data.map(item => ({ name: item.category, value: item.value })));
+      } catch (err) {
+        console.error("Error fetching asset distribution:", err);
+        setError("Failed to load asset distribution data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssetData();
+  }, [userId]);
 
   const handleAddAsset = async () => {
     if (!category || !value) {
@@ -61,55 +71,52 @@ const AssetDistribution = () => {
       return;
     }
 
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue) || numericValue <= 0) {
+      alert("Please enter a valid asset value.");
+      return;
+    }
+
     try {
-      // Submit asset to Supabase
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("asset_distribution")
-        .insert([
-          { category, value: parseFloat(value) },
-        ]);
+        .insert([{ userid: userId, category, value: numericValue }]);
 
       if (error) throw error;
 
-      // Clear the form and refetch the data
       setCategory("");
       setValue("");
-      await fetchAssetData();  // Refetch data after adding the asset
-    } catch (error) {
-      console.error("Error adding asset:", error);
+      setAssetData(prev => [...prev, { name: category, value: numericValue }]);
+    } catch (err) {
+      console.error("Error adding asset:", err);
       alert("Failed to add asset.");
     }
   };
 
-  // Custom Tooltip to show details
+  // Custom Tooltip
   const renderCustomizedTooltip = ({ payload, label }) => {
-    if (payload && payload.length > 0) {
-      const totalValue = assetData.reduce((acc, item) => acc + item.value, 0);
-      const percentage = ((payload[0].value / totalValue) * 100).toFixed(2);
-      return (
-        <div className="custom-tooltip bg-gray-800 p-3 rounded-lg text-white">
-          <p className="text-lg font-semibold">{label}</p>
-          <p className="text-sm">Value: {payload[0].value}</p>
-          <p className="text-sm">Percentage: {percentage}%</p>
-        </div>
-      );
-    }
-    return null;
+    if (!payload || payload.length === 0) return null;
+
+    const totalValue = assetData.reduce((acc, item) => acc + item.value, 0);
+    const percentage = ((payload[0].value / totalValue) * 100).toFixed(2);
+
+    return (
+      <div className="custom-tooltip bg-gray-800 p-3 rounded-lg text-white">
+        <p className="text-lg font-semibold">{label}</p>
+        <p className="text-sm">Value: {payload[0].value}</p>
+        <p className="text-sm">Percentage: {percentage}%</p>
+      </div>
+    );
   };
 
-  if (loading) {
-    return <div className="text-center text-white">Loading asset distribution...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
+  if (loading) return <div className="text-center text-white">Loading asset distribution...</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
 
   return (
     <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Asset Distribution PieChart */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
-        <h2 className="text-2xl font-semibold text-gradient bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">
+      <div className="bg-[#171c3a] p-6 rounded-3xl shadow-lg flex flex-col pl-8">
+        <h2 className="text-3xl  font-bold text-gradient bg-clip-text text-transparent text-[#FFD700] pb-3 pt-2">
           Asset Distribution
         </h2>
 
@@ -121,7 +128,6 @@ const AssetDistribution = () => {
               cy="50%"
               innerRadius={80}
               outerRadius={120}
-              fill="#8884d8"
               paddingAngle={5}
               dataKey="value"
             >
@@ -133,6 +139,8 @@ const AssetDistribution = () => {
             <Legend layout="vertical" align="right" verticalAlign="middle" />
           </PieChart>
         </ResponsiveContainer>
+
+        
       </div>
 
       {/* Income vs Expenses BarChart */}

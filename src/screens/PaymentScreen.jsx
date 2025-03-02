@@ -11,13 +11,14 @@ import categories from "./categories";
 export default function PaymentScreen() {
   const navigate = useNavigate();
 
-  const [userId, setUserId] = useState("");
+  // Store user info to avoid multiple fetches
+  const [user, setUser] = useState(null);
   const [total, setTotal] = useState(0);
   const [merchantName, setMerchantName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [googlePayType, setGooglePayType] = useState("phone");
   const [modal, showModal] = useState(false);
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [UPI, setUPI] = useState("");
@@ -25,70 +26,58 @@ export default function PaymentScreen() {
     "1e5d4e32-9b42-493a-af2e-dfa17d290255"
   );
 
+  // Fetch User & Balance Once
   useEffect(() => {
-    const fetchBalance = async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth._getUser();
-      if (userError || !user) {
-        console.error("No authenticated user found", userError);
+    async function fetchUserAndBalance() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        console.error("Authentication error:", error);
         return;
       }
-      const { data, error } = await supabase
+
+      setUser(user);
+
+      // Fetch user balance
+      const { data, error: balanceError } = await supabase
         .from("users")
         .select("totalbalance")
         .eq("id", user.id)
         .single();
-      if (error) {
-        console.error("Error fetching balance:", error.message);
+
+      if (balanceError) {
+        console.error("Error fetching balance:", balanceError.message);
       } else {
         setTotal(data?.totalbalance || 0);
       }
-    };
-    fetchBalance();
-  }, [userId]);
+    }
 
-  function findCategoryByMerchant(merchantName) {
-    const lowerMerchant = merchantName.toLowerCase();
+    fetchUserAndBalance();
+  }, []);
+
+  function findCategoryByMerchant(merchant) {
+    const lowerMerchant = merchant.toLowerCase();
     for (const category of categories) {
-      for (const keyword of category.keywords) {
-        if (lowerMerchant.includes(keyword)) {
-          return category.id;
-        }
+      if (category.keywords.some((keyword) => lowerMerchant.includes(keyword))) {
+        return category.id;
       }
     }
     return null;
   }
 
   async function addTransaction() {
-    // fetching user data
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth._getUser();
-    if (userError || !user) {
-      console.error("No authenticated user found", userError);
-      return;
-    }
-    setUserId(user.id);
+    if (!user) return;
 
-    // parsing categories
-    const cid = findCategoryByMerchant(merchantName);
-    console.log(cid);
-    let finalCategoryId = categoryId;
-    if (cid != null) {
-      finalCategoryId = cid;
-    }
+    // Determine correct category ID
+    const detectedCategoryId = findCategoryByMerchant(merchantName) || categoryId;
 
-    // inserting into db
     const { data, error } = await supabase.from("transactions").insert([
       {
         userid: user.id,
         upiid: UPI,
         amount: Number(amount),
-        merchantName: merchantName,
-        categoryid: finalCategoryId,
+        merchantName,
+        categoryid: detectedCategoryId,
         transactiontime: new Date().toISOString(),
       },
     ]);
@@ -101,19 +90,15 @@ export default function PaymentScreen() {
   }
 
   async function updateBalance() {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth._getUser();
-    if (userError || !user) {
-      console.error("No authenticated user found", userError);
-      return;
-    }
-    const newBalance = total - amount;
+    if (!user) return;
+
+    const newBalance = total - Number(amount);
+
     const { error } = await supabase
       .from("users")
       .update({ totalbalance: newBalance })
       .eq("id", user.id);
+
     if (error) {
       console.error("Error updating balance:", error.message);
     } else {
@@ -125,16 +110,14 @@ export default function PaymentScreen() {
     if (paymentComplete) {
       addTransaction();
       updateBalance();
+      setTimeout(() => {
+        showModal(false);
+      }, 1000);
     }
   }, [paymentComplete]);
 
-  const handlePaymentChange = (method) => {
-    setPaymentMethod(method);
-  };
-
-  const handleGooglePayTypeChange = (type) => {
-    setGooglePayType(type);
-  };
+  const handlePaymentChange = (method) => setPaymentMethod(method);
+  const handleGooglePayTypeChange = (type) => setGooglePayType(type);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -152,7 +135,6 @@ export default function PaymentScreen() {
       setPaymentStatus("confirmed");
       setTimeout(() => {
         setPaymentComplete(true);
-        showModal(false);
       }, 1500);
     }, 2000);
   };

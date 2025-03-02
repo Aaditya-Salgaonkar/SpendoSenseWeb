@@ -4,17 +4,30 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { askGemini } from "../api/geminiService";
+import { CircularProgress } from "@mui/material";
 
 const ChatBot = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
   
   const AnswerQuery = async (prompt) => {
-    const aiResponse = await askGemini(
-      `Answer this user query within the domain of our website: "${prompt}". Be concise (max 100 words).`
-    );
-    setResponse(aiResponse || "Error getting response.");
+    setLoading(true);
+    setResponse(""); // Clear previous response
+
+    try {
+      const aiResponse = await askGemini(
+        `Answer this user query within the domain of our website: "${prompt}". Be concise (max 100 words).`
+      );
+
+      setResponse(aiResponse || "No response received. Try again.");
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      setResponse("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -63,12 +76,13 @@ const ChatBot = () => {
             />
             <Button
               onClick={handleSubmit}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-2 rounded-lg shadow-md transition-all duration-300"
             >
-              Submit
+              {loading ? <CircularProgress size={20} color="inherit" /> : "Submit"}
             </Button>
             {response && (
-              <div className="p-3 bg-[#0a0f1c] rounded-lg border border-gray-300 text-white shadow-inner">
+              <div className="p-3 bg-[#1a1f2e] rounded-lg border border-gray-300 text-white shadow-inner">
                 <p className="text-sm">{response}</p>
               </div>
             )}

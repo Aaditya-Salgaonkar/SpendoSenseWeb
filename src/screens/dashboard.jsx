@@ -28,6 +28,7 @@ import IncomeCard from "@/components/IncomeCard";
 import RecentTransactions from "@/components/RecentTransaction";
 import IncomeVsExpenses from "@/components/IE";
 import AssetDistribution from "@/components/assets";
+import Spinner from "@/components/Spinner";
 
 const COLORS = ["#4CAF50", "#FFC107", "#2196F3", "#FF5722"];
 
@@ -371,7 +372,7 @@ const Dashboard = ({token}) => {
         <Stack
           sx={{ height: "100%", width: "100%" }}
           direction="column"
-          gap={2}
+          gap={3.5}
         >
           <motion.div
             style={{ height: "50%", width: "100%" }}
@@ -384,13 +385,13 @@ const Dashboard = ({token}) => {
                 width: "100%",
                 backgroundColor: "#171c3a",
                 borderRadius: "30px",
-                padding: 2,
+                padding: 4,
               }}
             >
               <Typography
                 fontSize={32}
                 fontWeight={600}
-                color="white"
+                color="#FFD700"
                 textAlign="left"
                 ml={3}
               >
@@ -402,23 +403,25 @@ const Dashboard = ({token}) => {
                 color="white"
                 textAlign="left"
                 ml={3}
+                mb={3}
               >
-                ₹
-                {incomeSourceDataForGraph
+                ₹ {incomeSourceDataForGraph
                   .reduce((sum, item) => sum + parseFloat(item.value), 0)
                   .toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Typography>
-              <ResponsiveContainer width="100%" height="70%">
-                <LineChart data={incomeSourceDataForGraph}>
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#FF4500"
-                    strokeWidth={3}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {
+                loading?(<Spinner />):(<ResponsiveContainer width="100%" height="70%">
+                  <LineChart data={incomeSourceDataForGraph}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#FF4500"
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>)
+              }
             </Stack>
           </motion.div>
           <motion.div
@@ -432,13 +435,13 @@ const Dashboard = ({token}) => {
                 width: "100%",
                 backgroundColor: "#171c3a",
                 borderRadius: "30px",
-                padding: 2,
+                padding: 4,
               }}
             >
               <Typography
                 fontSize={32}
                 fontWeight={600}
-                color="white"
+                color="#FFD700"
                 textAlign="left"
                 ml={3}
               >
@@ -450,23 +453,25 @@ const Dashboard = ({token}) => {
                 color="white"
                 textAlign="left"
                 ml={3}
+                mb={3}
               >
-                ₹
-                {incomeSourceDataForGraph2
+                ₹ {incomeSourceDataForGraph2
                   .reduce((sum, item) => sum + parseFloat(item.value), 0)
                   .toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Typography>
-              <ResponsiveContainer width="100%" height="70%">
-                <LineChart data={incomeSourceDataForGraph2}>
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#FF4500"
-                    strokeWidth={3}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {
+                loading?(<Spinner />):(<ResponsiveContainer width="100%" height="70%">
+                  <LineChart data={incomeSourceDataForGraph2}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#FF4500"
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>)
+              }
             </Stack>
           </motion.div>
         </Stack>
@@ -479,11 +484,13 @@ const Dashboard = ({token}) => {
                 height: "100%",
                 width: "100%",
                 backgroundColor: "#171c3a",
-                borderRadius: "20px",
+                borderRadius: "30px",
                 padding: 4.5,
+                paddingBottom:8
+                
               }}
             >
-              <Typography fontSize={20} fontWeight={600} color="white" mb={2}>
+              <Typography fontSize={32} fontWeight={600} color="#FFD700" mb={3}>
                 Spendings
               </Typography>
               <Stack direction="column" spacing={3}>

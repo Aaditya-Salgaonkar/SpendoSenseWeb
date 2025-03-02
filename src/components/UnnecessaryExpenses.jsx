@@ -89,16 +89,18 @@ const UnnecessaryExpenses = () => {
   }, []);
 
   return (
-    <div className="bg-gray-900 p-5 rounded-lg shadow-sm shadow-white text-white h-[480px] w-[480px]">
-      <h2 className="text-3xl font-bold  mt-3 px-10 text-center ">Unnecessary Expenses</h2>
+    <div className="bg-gray-900 p-5 rounded-lg shadow-sm  text-white w-full sm:w-[480px] lg:w-[600px] xl:w-[700px] mx-auto">
+      <h2 className="text-3xl font-bold mt-3 text-center">Unnecessary Expenses</h2>
 
       {loading ? (
-         <div className="flex-1 items-center justify-center"><Spinner /></div>
+        <div className="flex-1 items-center justify-center">
+          <Spinner />
+        </div>
       ) : transactions.length === 0 ? (
         <p>No unnecessary expenses found.</p>
       ) : (
         <div className="flex flex-col justify-center items-center">
-          <PieChart width={300} height={350}>
+          <PieChart width={300} height={350} className="sm:w-[350px] md:w-[400px] lg:w-[450px] xl:w-[500px]">
             <Pie
               data={transactions}
               cx="50%"
@@ -114,9 +116,10 @@ const UnnecessaryExpenses = () => {
             </Pie>
             <Tooltip />
             <Legend />
-          </PieChart> 
-          {/* ✅ Display Total Amount Wasted */}
-          <h2 className="text-xl font-bold mt-4 px-14">Total Amount Wasted: ₹{totalAmount}</h2>
+          </PieChart>
+
+          {/* Display Total Amount Wasted */}
+          <h2 className="text-xl font-bold mt-4">Total Amount Wasted: ₹{totalAmount}</h2>
         </div>
       )}
     </div>
