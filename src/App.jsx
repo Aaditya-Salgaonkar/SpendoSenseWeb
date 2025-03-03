@@ -12,23 +12,26 @@ import AddIncome from "@/screens/AddIncome";
 import Asset from "@/screens/Asset";
 import AddAssets from "@/components/AddAssets";
 import PaymentScreen from "@/screens/PaymentScreen";
+
 const App = () => {
   const [token, setToken] = useState(sessionStorage.getItem("token") || null);
 
   useEffect(() => {
-    if (token) {
-      sessionStorage.setItem("token", token);
-    } else {
-      sessionStorage.removeItem("token"); 
-    }
+    const handleStorageChange = () => {
+      setToken(sessionStorage.getItem("token"));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
-  
 
   return (
     <BrowserRouter>
       <Routes>
-      <Route path="/landingpage" element={<LandingPage />} />
-        <Route path="/" element={ <Dashboard token={token} />} />
+        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/" element={token ? <Dashboard token={token} /> : <LandingPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={token ? <Dashboard token={token} /> : <Navigate to="/login" />} />
@@ -39,10 +42,7 @@ const App = () => {
         <Route path="/addincome" element={token ? <AddIncome token={token} /> : <Navigate to="/login" />} />
         <Route path="/assets" element={token ? <Asset token={token} /> : <Navigate to="/login" />} />
         <Route path="/addassets" element={token ? <AddAssets token={token} /> : <Navigate to="/login" />} />
-        <Route
-          path="/payment"
-          element={token ? <PaymentScreen /> : <Navigate to="/login" />}
-        />
+        <Route path="/payment" element={token ? <PaymentScreen /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
