@@ -48,7 +48,7 @@ export default function LoginPage() {
        // alert("Login successful! Redirecting...");
         
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/");
           //window.location.reload(); // Force refresh to ensure token update
           setLoading(false);
         }, 500);
