@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FaApple, FaGooglePlay, FaChartLine, FaUserShield, FaRobot } from "react-icons/fa";
 import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import dashImg from './assets/dash.png';
+import dashImg from '@/assets/dash.png';
 const features = [
   { title: "AI-Driven Insights", desc: "Get personalized financial recommendations.", icon: <FaRobot /> },
   { title: "Automated Expense Tracking", desc: "Categorize and analyze your spending effortlessly.", icon: <FaChartLine /> },
