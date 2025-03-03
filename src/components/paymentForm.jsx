@@ -34,10 +34,11 @@ const PaymentForm = ({
         component="form"
         onSubmit={handleSubmit}
         sx={{
-          width: "400px",
+          width: "300px",
           p: "20px",
           borderRadius: "15px",
           background: "#171c3a",
+          marginTop:10,
           boxShadow: "0px 0px 10px rgb(0, 0, 0)",
         }}
       >

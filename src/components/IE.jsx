@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
+import Spinner from "./Spinner";
 
 const IncomeVsExpenses = () => {
   const [chartData, setChartData] = useState([]);
@@ -57,17 +58,19 @@ const IncomeVsExpenses = () => {
         const mergedData = new Map();
 
         incomeData.forEach(({ created_at, amount }) => {
-          const date = new Date(created_at).toLocaleDateString();
-          const entry = mergedData.get(date) || { date, income: 0, expense: 0 };
+          const date = new Date(created_at);
+          const formattedDate = date.toLocaleString("default", { month: "short", year: "numeric" }); // e.g., Mar 2025
+          const entry = mergedData.get(formattedDate) || { date: formattedDate, income: 0, expense: 0 };
           entry.income += Number(amount);
-          mergedData.set(date, entry);
+          mergedData.set(formattedDate, entry);
         });
 
         expenseData.forEach(({ transactiontime, amount }) => {
-          const date = new Date(transactiontime).toLocaleDateString();
-          const entry = mergedData.get(date) || { date, income: 0, expense: 0 };
+          const date = new Date(transactiontime);
+          const formattedDate = date.toLocaleString("default", { month: "short", year: "numeric" });
+          const entry = mergedData.get(formattedDate) || { date: formattedDate, income: 0, expense: 0 };
           entry.expense += Number(amount);
-          mergedData.set(date, entry);
+          mergedData.set(formattedDate, entry);
         });
 
         // Convert to sorted array
@@ -87,45 +90,53 @@ const IncomeVsExpenses = () => {
     fetchIncomeAndSpendData();
   }, []);
 
+  // Format Y-axis values to use K for 1000s
+  const formatYAxis = (value) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value);
+
   return (
-    <div className="bg-[#171c3a] p-7 rounded-3xl shadow-lg">
-      <h2 className="text-3xl font-bold text-[#FFD700] mb-10">Income vs Expenses </h2>
+    <div className="bg-[#171c3a] p-4 md:p-7 rounded-3xl shadow-lg w-full max-w-sm md:max-w-2xl mx-auto">
+      <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700] text-center mb-6">
+        Income vs Expenses
+      </h2>
 
       {loading ? (
-        <p className="text-white">Loading...</p>
+        <div><Spinner /></div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500 text-center">{error}</p>
       ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" />
-            <XAxis dataKey="date" stroke="#ffffff" />
-            <YAxis stroke="#ffffff" tickCount={6} domain={["auto", "auto"]} />
-            <Tooltip
-              contentStyle={{ backgroundColor: "#1e293b", color: "#ffffff", borderRadius: "5px" }}
-            />
-            <Legend />
-            <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="3 3" />
+        <div className="w-full">
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" />
+              <XAxis dataKey="date" stroke="#ffffff" tick={{ fontSize: 12 }} />
+              <YAxis stroke="#ffffff" tickFormatter={formatYAxis} tick={{ fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1e293b", color: "#ffffff", borderRadius: "5px" }}
+                formatter={(value) => `${value >= 1000 ? (value / 1000).toFixed(1) + "K" : value}`}
+              />
+              <Legend />
+              <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="3 3" />
 
-            <Line
-              type="monotone"
-              dataKey="income"
-              stroke="#4CAF50"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#4CAF50", strokeWidth: 2, stroke: "#ffffff" }}
-              activeDot={{ r: 7, fill: "#fff", stroke: "#4CAF50", strokeWidth: 3 }}
-            />
+              <Line
+                type="monotone"
+                dataKey="income"
+                stroke="#4CAF50"
+                strokeWidth={3}
+                dot={{ r: 4, fill: "#4CAF50", strokeWidth: 2, stroke: "#ffffff" }}
+                activeDot={{ r: 6, fill: "#fff", stroke: "#4CAF50", strokeWidth: 3 }}
+              />
 
-            <Line
-              type="monotone"
-              dataKey="expense"
-              stroke="#F44336"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#F44336", strokeWidth: 2, stroke: "#ffffff" }}
-              activeDot={{ r: 7, fill: "#fff", stroke: "#F44336", strokeWidth: 3 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+              <Line
+                type="monotone"
+                dataKey="expense"
+                stroke="#F44336"
+                strokeWidth={3}
+                dot={{ r: 4, fill: "#F44336", strokeWidth: 2, stroke: "#ffffff" }}
+                activeDot={{ r: 6, fill: "#fff", stroke: "#F44336", strokeWidth: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

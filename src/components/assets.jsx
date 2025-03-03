@@ -9,6 +9,7 @@ import {
   Legend,
 } from "recharts";
 import IncomeVsExpenses from "./IE";
+import Spinner from "./Spinner";
 
 const COLORS = [
   "#FF6347", "#FFBB28", "#00C49F", "#0088FE", "#FF8042",
@@ -23,7 +24,6 @@ const AssetDistribution = () => {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
 
-  // Fetch the authenticated user
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -36,7 +36,6 @@ const AssetDistribution = () => {
     fetchUser();
   }, []);
 
-  // Fetch asset data for the logged-in user
   useEffect(() => {
     if (!userId) return;
 
@@ -48,7 +47,7 @@ const AssetDistribution = () => {
         const { data, error } = await supabase
           .from("asset_distribution")
           .select("category, value")
-          .eq("userid", userId) // Fetch only the current user's assets
+          .eq("userid", userId)
           .order("created_at", { ascending: true });
 
         if (error) throw error;
@@ -93,7 +92,6 @@ const AssetDistribution = () => {
     }
   };
 
-  // Custom Tooltip
   const renderCustomizedTooltip = ({ payload, label }) => {
     if (!payload || payload.length === 0) return null;
 
@@ -109,38 +107,40 @@ const AssetDistribution = () => {
     );
   };
 
-  if (loading) return <div className="text-center text-white">Loading asset distribution...</div>;
+  
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
   return (
     <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Asset Distribution PieChart */}
-      <div className="bg-[#171c3a] p-6 rounded-3xl shadow-lg flex flex-col pl-8">
-        <h2 className="text-3xl  font-bold text-gradient bg-clip-text text-[#FFD700] pb-3 pt-2">
+      <div className="bg-[#171c3a] p-4 md:p-6 rounded-3xl shadow-lg flex flex-col items-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-gradient bg-clip-text text-[#FFD700] pb-3 pt-2 text-center">
           Asset Distribution
         </h2>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={assetData}
-              cx="50%"
-              cy="50%"
-              innerRadius={80}
-              outerRadius={120}
-              paddingAngle={5}
-              dataKey="value"
-            >
-              {assetData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={renderCustomizedTooltip} />
-            <Legend layout="vertical" align="right" verticalAlign="middle" />
-          </PieChart>
-        </ResponsiveContainer>
-
-        
+        {
+          loading?(<div><Spinner /></div>):(<div className="w-full max-w-sm md:max-w-lg">
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={assetData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {assetData.map((entry, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={renderCustomizedTooltip} />
+                <Legend layout="horizontal" align="center" />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>)
+        }
       </div>
 
       {/* Income vs Expenses BarChart */}

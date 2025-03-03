@@ -57,9 +57,10 @@ const ExpensesDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1c] text-white p-6">
+    <div className="min-h-screen bg-[#0a0f1c] text-white p-6 pb-10">
       <HomeNav />
-      <Typography variant="h5" className="text-center text-gray-300 mt-4">
+
+      <Typography variant="h5" paddingTop={5} fontWeight={600} className="text-center text-gray-300 ">
         Your Expenses
       </Typography>
 
@@ -83,7 +84,7 @@ const ExpensesDashboard = () => {
       </div>
 
       <div className="">
-        <Card className="w-full max-w-4xl p-2 mt-6 rounded-lg shadow-lg bg-[#0a0f1c] overflow-x-auto mx-auto">
+        <Card className="w-full max-w-4xl p-1 mt-6 rounded-lg shadow-lg bg-[#0a0f1c] overflow-x-auto mx-auto">
           {loading ? (
             <div className="flex justify-center py-5 bg-[#0a0f1c]">
               <Spinner />

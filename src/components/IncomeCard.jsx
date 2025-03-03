@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from "../supabase";
-import { Stack, Box, Typography, CircularProgress } from "@mui/material";
+import { Stack, Box, Typography, useMediaQuery } from "@mui/material";
 import { motion } from "framer-motion";
 import {
   ResponsiveContainer,
@@ -18,6 +18,9 @@ const IncomeCard = () => {
   const [totalNetWorth, setTotalNetWorth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isTablet = useMediaQuery("(max-width: 1024px)");
 
   const fetchIncome = useCallback(async () => {
     try {
@@ -56,6 +59,15 @@ const IncomeCard = () => {
     fetchIncome();
   }, [fetchIncome]);
 
+  // Format numbers in K notation
+  const formatAmount = (amount) => (amount >= 1000 ? `$${(amount / 1000).toFixed(1)}K` : `$${amount}`);
+
+  // Shorten long source names
+  const formatSource = (source) => (source.length > 8 ? source.slice(0, 8) + "…" : source);
+
+  // Dynamic bar size based on screen
+  const getBarSize = () => (isMobile ? 25 : isTablet ? 35 : 45);
+
   // Premium gradient colors for bars
   const premiumColors = [
     "#FFD700", // Gold
@@ -70,15 +82,12 @@ const IncomeCard = () => {
   return (
     <Stack direction="column" gap={3} sx={{ height: "100%", width: "100%" }}>
       {/* Net Worth Card */}
-      <motion.div
-        style={{ height: "30%", width: "100%" }}
-        whileHover={{ scale: 1.05 }}
-      >
+      <motion.div style={{ height: "30%", width: "100%" }} whileHover={{ scale: 1.05 }}>
         <Stack
           direction="column"
           spacing={1}
           pt={3}
-          pl={4}
+          pl={isMobile ? 2 : 4}
           sx={{
             height: "100%",
             width: "100%",
@@ -87,37 +96,32 @@ const IncomeCard = () => {
             boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.2)",
           }}
         >
-          <div>
-          <Typography fontSize={28} fontWeight={700} color="#171c3a">
+          <Typography fontSize={isMobile ? 22 : 28} fontWeight={700} color="#171c3a">
             Total Net Worth
           </Typography>
           {loading ? (
-            <div className="items-center justify-center flex-1"></div>
+            <div className=""></div>
           ) : (
-            <Typography fontSize={36} fontWeight={700} color="#fff">
-              ${totalNetWorth.toLocaleString()}
+            <Typography fontSize={isMobile ? 28 : 36} fontWeight={700} color="#fff">
+              {formatAmount(totalNetWorth)}
             </Typography>
           )}
-          </div>
         </Stack>
       </motion.div>
 
       {/* Income Source Bar Chart */}
-      <motion.div
-        style={{ height: "70%", width: "100%" }}
-        whileHover={{ scale: 1.05 }}
-      >
+      <motion.div style={{ height: "70%", width: "100%" }} whileHover={{ scale: 1.05 }}>
         <Box
           sx={{
             height: "100%",
             width: "100%",
             backgroundColor: "#171c3a",
             borderRadius: "20px",
-            padding: "40px",
+            padding: isMobile ? "20px" : "40px",
             boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Typography fontSize={32} fontWeight={600} mb={3} ml={2} color="#FFD700">
+          <Typography fontSize={isMobile ? 24 : 32} fontWeight={600} mb={3} ml={2} color="#FFD700">
             Income Sources
           </Typography>
 
@@ -131,9 +135,16 @@ const IncomeCard = () => {
             <Typography color="#FFFFFF">No income data available.</Typography>
           ) : (
             <ResponsiveContainer width="100%" height="90%">
-              <BarChart data={incomeData} barSize={40}>
-                <XAxis dataKey="source" stroke="#FFFFFF" fontWeight={600} />
+              <BarChart data={incomeData} barSize={getBarSize()}>
+                <XAxis
+                  dataKey="source"
+                  stroke="#FFFFFF"
+                  fontWeight={600}
+                  tickFormatter={formatSource} // Format long source names
+                  tick={{ fontSize: isMobile ? 10 : 14 }} // Adjust text size
+                />
                 <Tooltip
+                  formatter={(value) => formatAmount(value)}
                   contentStyle={{
                     backgroundColor: "#222",
                     color: "#FFD700",
@@ -152,8 +163,9 @@ const IncomeCard = () => {
                     dataKey="amount"
                     position="top"
                     fill="#FFFFFF"
-                    fontSize={16}
+                    fontSize={isMobile ? 12 : 16}
                     fontWeight={600}
+                    formatter={formatAmount} // Show amounts in K format
                   />
                   {incomeData.map((entry, index) => (
                     <Cell

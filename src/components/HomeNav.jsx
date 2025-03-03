@@ -66,7 +66,7 @@ const HomeNav = () => {
   };
 
   return (
-    <nav className="w-full bg-[#101628] shadow-lg rounded-lg p-4">
+    <nav className="w-full bg-[#101628] shadow-lg rounded-lg p-4 ">
       <div className="flex justify-between items-center">
         {/* Left Section - Branding & Balance Info */}
         <div>

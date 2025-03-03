@@ -21,9 +21,7 @@ const RecentTransactions = () => {
 
         if (expenseError) throw expenseError;
 
-        const categoryIds = [
-          ...new Set(expenseData.map((txn) => txn.categoryid)),
-        ];
+        const categoryIds = [...new Set(expenseData.map((txn) => txn.categoryid))];
         const { data: categories, error: categoryError } = await supabase
           .from("categories")
           .select("id, name")
@@ -64,43 +62,53 @@ const RecentTransactions = () => {
     fetchTransactions();
   }, []);
 
+  // Format amount with K notation
+  const formatAmount = (amount) => (amount >= 1000 ? `₹${(amount / 1000).toFixed(1)}K` : `₹${amount}`);
+
+  // Format date as Month Year (e.g., Mar 2025)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("default", { month: "short", year: "numeric" });
+  };
+
   return (
-    <div className="w-full mt-8 bg-[#171c3a] p-6 rounded-3xl shadow-lg">
-      <h2 className="text-3xl font-bold text-yellow-400 ">Recent Transactions</h2>
-      <table className="w-full mt-6">
-        <thead>
-          <tr className="text-left border-b border-gray-700">
-            <th className="p-2">Date</th>
-            <th className="p-2">Category</th>
-            <th className="p-2">Type</th>
-            <th className="p-2">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.length > 0 ? (
-            transactions.map((txn) => (
-              <tr key={txn.id} className="border-b border-gray-700">
-                <td className="p-2">{new Date(txn.created_at).toLocaleDateString()}</td>
-                <td className="p-2">{txn.category || "N/A"}</td>
-                <td
-                  className={`p-2 ${
-                    txn.type === "Income" ? "text-green-400" : "text-red-400"
-                  }`}
-                >
-                  {txn.type}
-                </td>
-                <td className="p-2">₹{txn.amount}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="p-2 text-center text-gray-400">
-                No transactions found
-              </td>
+    <div className="w-full mt-8 bg-[#171c3a] p-4 md:p-6 rounded-3xl shadow-lg mx-auto max-w-full lg:max-w-none">
+      <h2 className="text-2xl md:text-3xl font-bold text-yellow-400 text-center">
+        Recent Transactions
+      </h2>
+
+      <div className="overflow-x-auto mt-6">
+        <table className="w-full min-w-[600px] lg:min-w-full">
+          <thead>
+            <tr className="text-left border-b border-gray-700 text-sm md:text-base">
+              <th className="p-2 md:p-3">Date</th>
+              <th className="p-2 md:p-3">Category</th>
+              <th className="p-2 md:p-3">Type</th>
+              <th className="p-2 md:p-3">Amount</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {transactions.length > 0 ? (
+              transactions.map((txn) => (
+                <tr key={txn.id} className="border-b border-gray-700 text-sm md:text-base">
+                  <td className="p-2 md:p-3">{formatDate(txn.created_at)}</td>
+                  <td className="p-2 md:p-3">{txn.category || "N/A"}</td>
+                  <td className={`p-2 md:p-3 ${txn.type === "Income" ? "text-green-400" : "text-red-400"}`}>
+                    {txn.type}
+                  </td>
+                  <td className="p-2 md:p-3">{formatAmount(txn.amount)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="p-2 text-center text-gray-400">
+                  No transactions found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

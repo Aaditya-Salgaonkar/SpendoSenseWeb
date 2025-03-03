@@ -113,9 +113,10 @@ const IncomeDashboard = ({ token }) => {
         <HomeNav />
       </div>
 
+      <div className="px-3">
       {
         loading?(<div className="flex-1 items-center justify-center"><Spinner /></div>):(<Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Typography variant="h5" className="text-center text-gray-300 mb-6 ">
+          <Typography variant="h5" fontWeight={600} className="text-center text-gray-300 mb-6 ">
             Your Income History
           </Typography>
   
@@ -139,71 +140,73 @@ const IncomeDashboard = ({ token }) => {
   
           {/* Monthly Income Modal */}
           <Dialog open={open} onClose={() => setOpen(false)}>
-            <div className="bg-gray-400">
-            <DialogTitle className="text-black">Add Monthly Income</DialogTitle>
-            <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="monthlyIncome"
-                label="Enter Monthly Income"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={monthlyIncome}
-                onChange={handleMonthlyIncomeChange}
-                style={{fontColor:'white'}}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpen(false)} >
-                Cancel
-              </Button>
-              <Button onClick={handleMonthlyIncomeSubmit} color="primary">
-                Submit
-              </Button>
-            </DialogActions>
-            </div>
-            
-          </Dialog>
+      <div className="bg-[#0a0f1c]  border-[#1a2335] border shadow-lg p-5">
+        {/* Dialog Title */}
+        <DialogTitle className="text-white text-lg font-semibold border-b border-[#1a2335] pb-3">
+          Add Monthly Income
+        </DialogTitle>
+
+        <div className="items-center justify-center flex my-5">
+        <input
+            type="number"
+            name="amount"
+            value={monthlyIncome}
+            onChange={handleMonthlyIncomeChange}
+            placeholder="Amount"
+            className="p-2 sm:p-3 text-white bg-[#0a0f1c] border rounded hover:border-blue-400 text-sm sm:text-base"
+            required
+          />
+        </div>
+
+        {/* Dialog Actions (Buttons) */}
+        <DialogActions className="flex justify-end gap-3 border-t border-[#1a2335] pt-3">
+          <Button
+            onClick={() => setOpen(false)}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleMonthlyIncomeSubmit}
+            className="bg-[#4A90E2] hover:bg-[#3a7bc4] text-white px-4 py-2 rounded-lg transition-all"
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </div>
+    </Dialog>
   
           {/* Transactions Table */}
-          <Card className="w-[80%] mt-6 bg-[#0a0f1c] shadow-lg rounded-lg p-3 max-h-[70vh] overflow-y-auto mb-10">
-            {loading ? (
-              <Box className="flex justify-center bg-[#0a0f1c]">
-                <div className="items-center justify-center py-5"><Spinner /></div>
-              </Box>
-            ) : transactions.length > 0 ? (
-              <table className="w-full border-collapse ">
-                <thead className="sticky top-0 bg-gray-900 text-white">
-                  <tr>
-                    <th className="py-3 px-4 text-left">Source</th>
-                    <th className="py-3 px-4 text-left">Date</th>
-                    <th className="py-3 px-4 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((transaction) => (
-                    <motion.tr
-                      key={transaction.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="border-b border-gray-600 hover:bg-gray-700 bg-[#0a0f1c] transition-all"
-                    >
-                      <td className="py-4 px-4 text-white">{transaction.source}</td>
-                      <td className="py-4 px-4 text-white">{new Date(transaction.created_at).toLocaleDateString()}</td>
-                      <td className="py-4 px-4 text-right text-green-600">₹{transaction.amount.toFixed(2)}</td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <Typography color="textSecondary" className="text-center py-6">
-                No income transactions found.
-              </Typography>
-            )}
-          </Card>
+          <Card className="w-full md:w-[80%] m-5 bg-[#0a0f1c] shadow-lg rounded-lg p-1  overflow-x-auto mb-10 mt-10">
+  <div className="w-full overflow-x-auto">
+    <table className="min-w-full border-collapse">
+      <thead className="sticky top-0 bg-gray-900 text-white text-xs md:text-sm">
+        <tr>
+          <th className="py-2 md:py-3 px-2 md:px-4 text-left">Source</th>
+          <th className="py-2 md:py-3 px-2 md:px-4 text-left">Date</th>
+          <th className="py-2 md:py-3 px-2 md:px-4 text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {transactions.map((transaction) => (
+          <motion.tr
+            key={transaction.id}
+            whileHover={{ scale: 1.02 }}
+            className="border-b border-gray-600 hover:bg-gray-700 bg-[#0a0f1c] transition-all text-xs md:text-sm"
+          >
+            <td className="py-2 px-2 md:py-4 md:px-4 text-white">{transaction.source}</td>
+            <td className="py-2 px-2 md:py-4 md:px-4 text-white">{new Date(transaction.created_at).toLocaleDateString()}</td>
+            <td className="py-2 px-2 md:py-4 md:px-4 text-right text-green-600">₹{transaction.amount.toFixed(2)}</td>
+          </motion.tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Card>
+
         </Box>)
       }
+      </div>
     </div>
   );
 };

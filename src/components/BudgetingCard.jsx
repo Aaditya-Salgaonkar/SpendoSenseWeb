@@ -102,66 +102,72 @@ const BudgetingDialog = () => {
   return (
     <>
       {/* Button to Open Dialog */}
-      <Button className="top-10 bg-blue-700 text-white px-4 py-2 rounded-md" onClick={() => setOpen(true)}>
+      <Button
+        className="w-full sm:w-auto bg-blue-700 text-white px-6 py-2 rounded-md mb-4 sm:mb-0"
+        onClick={() => setOpen(true)}
+      >
         + Add Budget
       </Button>
 
       {/* Dialog Component */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-[#101628] text-white">
+        <DialogContent className="bg-[#101628] text-white w-[90%] sm:w-[400px] p-6 rounded-lg">
           <DialogHeader>
-            <DialogTitle>Create a Budget</DialogTitle>
-            <DialogDescription>Set targets for monitoring your expenses.</DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Create a Budget</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
+              Set targets for monitoring your expenses.
+            </DialogDescription>
           </DialogHeader>
-          
+
           <CardContent>
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div className="grid w-full items-center gap-4">
-                
-                {/* Category Selection */}
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="categories">Category</Label>
-                  <Select onValueChange={setSelectedCategory} disabled={loading}>
-                    <SelectTrigger id="categories">
-                      <SelectValue placeholder={loading ? "Loading..." : "Select a category"} />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      {categories.length > 0 ? (
-                        categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="none" disabled>
-                          {loading ? "Loading..." : "No categories found"}
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+              
+              {/* Category Selection */}
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="categories" className="text-sm sm:text-base">Category</Label>
+                <Select onValueChange={setSelectedCategory} disabled={loading}>
+                  <SelectTrigger id="categories" className="h-10 sm:h-12">
+                    <SelectValue placeholder={loading ? "Loading..." : "Select a category"} />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {categories.length > 0 ? (
+                      categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id} className="text-sm sm:text-base">
+                          {category.name}
                         </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Amount Input */}
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input
-                    id="amount"
-                    placeholder="Enter the amount"
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                  />
-                </div>
-
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled className="text-sm sm:text-base">
+                        {loading ? "Loading..." : "No categories found"}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {/* Amount Input */}
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="amount" className="text-sm sm:text-base">Amount</Label>
+                <Input
+                  id="amount"
+                  placeholder="Enter the amount"
+                  type="number"
+                  className="h-10 sm:h-12 text-sm sm:text-base"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </div>
+
             </form>
           </CardContent>
 
           {/* Dialog Footer */}
-          <DialogFooter className="flex justify-end">
-            <Button variant="outline" className='text-black' onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveBudget} disabled={saving}>
+          <DialogFooter className="flex justify-end gap-3">
+            <Button variant="outline" className="text-black border-gray-400" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveBudget} disabled={saving} className="bg-blue-600">
               {saving ? "Saving..." : "Save Budget"}
             </Button>
           </DialogFooter>

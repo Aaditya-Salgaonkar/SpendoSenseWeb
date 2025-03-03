@@ -84,8 +84,8 @@ const GroupedBarChart = () => {
   }, [fetchData]);
 
   return (
-    <Card className="flex flex-col bg-[#101628] text-white p-4 border-[#101628] sm:w-[480px] md:w-[600px] lg:w-[700px] xl:w-[800px] mx-auto ">
-      <CardTitle className="mb-4 font-bold text-3xl pt-10 text-center">
+    <Card className="flex flex-col bg-[#101628] text-white p-4 border-[#101628] w-full sm:w-[90%] md:w-[80%] lg:w-[70%] mx-auto">
+      <CardTitle className="mb-4 font-bold text-lg sm:text-xl md:text-2xl pt-6 text-center">
         Planned vs. Actual Spending
       </CardTitle>
       <CardContent className="w-full h-full flex justify-center items-center">
@@ -94,21 +94,21 @@ const GroupedBarChart = () => {
             <Spinner />
           </div>
         ) : error ? (
-          <p className="text-red-500 text-center">{error}</p>
+          <p className="text-red-500 text-center text-sm sm:text-base">{error}</p>
         ) : (
-          <ResponsiveContainer width="80%" height={400}>
+          <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              barCategoryGap={20}
+              margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
+              barCategoryGap={15}
               barGap={5}
             >
-              <XAxis dataKey="category" tick={{ fill: "white" }} />
-              <YAxis tick={{ fill: "white" }} />
+              <XAxis dataKey="category" tick={{ fill: "white", fontSize: 12 }} />
+              <YAxis tick={{ fill: "white", fontSize: 12 }} />
               <Tooltip cursor={{ fill: "rgba(255,255,255,0.2)" }} />
               <Legend />
-              <Bar dataKey="planned" fill="#4CAF50" name="Planned Budget" barSize={40} />
-              <Bar dataKey="spent" fill="#F44336" name="Amount Spent" barSize={40} />
+              <Bar dataKey="planned" fill="#4CAF50" name="Planned Budget" barSize={30} sm:barSize={35} md:barSize={40} />
+              <Bar dataKey="spent" fill="#F44336" name="Amount Spent" barSize={30} sm:barSize={35} md:barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         )}

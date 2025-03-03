@@ -11,12 +11,7 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Legend,
-  LabelList,
+
   LineChart,
   Line,
 } from "recharts";
@@ -26,92 +21,17 @@ import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import IncomeCard from "@/components/IncomeCard";
 import RecentTransactions from "@/components/RecentTransaction";
-import IncomeVsExpenses from "@/components/IE";
+import { useMediaQuery } from "@mui/material";
 import AssetDistribution from "@/components/assets";
 import Spinner from "@/components/Spinner";
 
-const COLORS = ["#4CAF50", "#FFC107", "#2196F3", "#FF5722"];
 
-const topStats = [
-  { title: "Available Balance", value: "$14,822", color: "text-green-400" },
-  { title: "Total Net Worth", value: "$278,378", color: "text-red-300" },
-  { title: "Total Spendings", value: "$9,228", color: "text-yellow-300" },
-];
 
-const incomeSourceData = [
-  { name: "E-commerce", value: 2100, color: "#FFFFFF" },
-  { name: "Google Adsense", value: 950, color: "#FF4D4D" },
-  { name: "My Shop", value: 8000, color: "#FFFFFF" },
-  { name: "Salary", value: 13000, color: "#00D084" },
-];
-
-const spendingBreakdown = [
-  {
-    label: "Housing",
-    amount: "$3,452",
-    icon: <HomeIcon sx={{ color: "white" }} />,
-    iconColor: "#8B5CF6",
-  },
-  {
-    label: "Personal",
-    amount: "$45,581",
-    icon: <PersonIcon sx={{ color: "white" }} />,
-    iconColor: "#EC4899",
-  },
-  {
-    label: "Transportation",
-    amount: "$2,190",
-    icon: <DirectionsCarIcon sx={{ color: "white" }} />,
-    iconColor: "#F97316",
-  },
-];
-
-const assetData = [
-  { name: "Gold", value: 15700 },
-  { name: "Stocks", value: 22500 },
-  { name: "Warehouse", value: 120000 },
-  { name: "Land", value: 135000 },
-];
-
-const transactions = [
-  {
-    id: 1,
-    type: "Income",
-    amount: 2500,
-    category: "Salary",
-    date: "2024-02-26",
-  },
-  {
-    id: 2,
-    type: "Expense",
-    amount: 120,
-    category: "Groceries",
-    date: "2024-02-24",
-  },
-  {
-    id: 3,
-    type: "Expense",
-    amount: 70,
-    category: "Transport",
-    date: "2024-02-22",
-  },
-  {
-    id: 4,
-    type: "Income",
-    amount: 800,
-    category: "Freelance",
-    date: "2024-02-20",
-  },
-];
 
 const Dashboard = ({token}) => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(true);
-  const [users, setUsers] = useState([]);
-    const [transactions, setTransactions] = useState([]);
-    const [budgets, setBudgets] = useState([]);
-    const [analytics, setAnalytics] = useState([]);
-    const [financialAdvice, setFinancialAdvice] = useState([]);
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
     const [categories, setCategories] = useState([]);
     const [loading,setLoading] = useState(true);
     const [spendingBreakdown, setSpendingBreakdown] = useState([]);
@@ -302,183 +222,103 @@ const Dashboard = ({token}) => {
 
       {/* Combined Cards Section */}
       <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: Net Worth & Income Source */}
-        {/* <Stack
-          direction="column"
-          gap={2}
-          sx={{ height: "100%", width: "100%" }}
-        >
-          <motion.div
-            style={{ height: "30%", width: "100%" }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <Stack
-              direction="column"
-              spacing={1}
-              pt={2}
-              pl={3}
-              sx={{
-                height: "100%",
-                width: "100%",
-                borderRadius: "20px",
-                background: "linear-gradient(90deg, #FF7F50, #FF4500)",
-              }}
-            >
-              <Typography fontSize={32} fontWeight={600}>
-                Total Networth
-              </Typography>
-              <Typography fontSize={32} fontWeight={600}>
-                $278,378
-              </Typography>
-            </Stack>
-          </motion.div>
-          <motion.div
-            style={{ height: "70%", width: "100%" }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <Box
-              sx={{
-                height: "100%",
-                width: "100%",
-                backgroundColor: "#171c3a",
-                borderRadius: "20px",
-              }}
-            >
-              <h2 className="text-white text-xl mb-4 ml-5 pt-2">
-                Income Source
-              </h2>
-              <ResponsiveContainer
-                width="100%"
-                height="90%"
-                className="overflow-auto"
-                style={{ padding: "20px" }}
-              >
-                <BarChart data={incomeSourceData} barSize={50}>
-                  <XAxis dataKey="name" stroke="#FFFFFF" fontWeight={600} />
-                  <Tooltip />
-                  <Bar dataKey="value">
-                    <LabelList dataKey="value" position="top" fill="#FFFFFF" />
-                    {incomeSourceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </motion.div>
-        </Stack> */}
+
         <IncomeCard token={token} />
         {/* Card 2: Spending Line Charts */}
-        <Stack
-          sx={{ height: "100%", width: "100%" }}
-          direction="column"
-          gap={3.5}
-        >
-          <motion.div
-            style={{ height: "50%", width: "100%" }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <Stack
-              direction="column"
-              sx={{
-                height: "100%",
-                width: "100%",
-                backgroundColor: "#171c3a",
-                borderRadius: "30px",
-                padding: 4,
-              }}
-            >
-              <Typography
-                fontSize={32}
-                fontWeight={600}
-                color="#FFD700"
-                textAlign="left"
-                ml={3}
-              >
-                Income
-              </Typography>
-              <Typography
-                fontSize={24}
-                fontWeight={500}
-                color="white"
-                textAlign="left"
-                ml={3}
-                mb={3}
-              >
-                ₹ {incomeSourceDataForGraph
-                  .reduce((sum, item) => sum + parseFloat(item.value), 0)
-                  .toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </Typography>
-              {
-                loading?(<Spinner />):(<ResponsiveContainer width="100%" height="70%">
-                  <LineChart data={incomeSourceDataForGraph}>
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#FF4500"
-                      strokeWidth={3}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>)
-              }
-            </Stack>
-          </motion.div>
-          <motion.div
-            style={{ height: "50%", width: "100%" }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <Stack
-              direction="column"
-              sx={{
-                height: "100%",
-                width: "100%",
-                backgroundColor: "#171c3a",
-                borderRadius: "30px",
-                padding: 4,
-              }}
-            >
-              <Typography
-                fontSize={32}
-                fontWeight={600}
-                color="#FFD700"
-                textAlign="left"
-                ml={3}
-              >
-                Expense
-              </Typography>
-              <Typography
-                fontSize={24}
-                fontWeight={500}
-                color="white"
-                textAlign="left"
-                ml={3}
-                mb={3}
-              >
-                ₹ {incomeSourceDataForGraph2
-                  .reduce((sum, item) => sum + parseFloat(item.value), 0)
-                  .toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </Typography>
-              {
-                loading?(<Spinner />):(<ResponsiveContainer width="100%" height="70%">
-                  <LineChart data={incomeSourceDataForGraph2}>
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#FF4500"
-                      strokeWidth={3}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>)
-              }
-            </Stack>
-          </motion.div>
-        </Stack>
+        <Stack sx={{ height: "100%", width: "100%" }} direction="column" gap={3.5}>
+  {/* Income Graph */}
+  <motion.div
+    style={{ minHeight: "300px", width: "100%" }}
+    whileHover={{ scale: 1.05 }}
+  >
+    <Stack
+      direction="column"
+      sx={{
+        height: "100%",
+        width: "100%",
+        backgroundColor: "#171c3a",
+        borderRadius: "30px",
+        padding: 4,
+      }}
+    >
+      <Typography fontSize={32} fontWeight={600} color="#FFD700" ml={3}>
+        Income
+      </Typography>
+      <Typography fontSize={24} fontWeight={500} color="white" ml={3} mb={3}>
+        ₹{" "}
+        {incomeSourceDataForGraph
+          .reduce((sum, item) => sum + parseFloat(item.value), 0)
+          .toLocaleString(undefined, { minimumFractionDigits: 2 })}
+      </Typography>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="w-full min-h-[150px] md:min-h-[150px]">
+          <ResponsiveContainer width="100%" height="100%" aspect={2}>
+            <LineChart data={incomeSourceDataForGraph}>
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#FF4500"
+                strokeWidth={3}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </Stack>
+  </motion.div>
+
+  {/* Expense Graph */}
+  <motion.div
+    style={{ minHeight: "300px", width: "100%" }}
+    whileHover={{ scale: 1.05 }}
+  >
+    <Stack
+      direction="column"
+      sx={{
+        height: "100%",
+        width: "100%",
+        backgroundColor: "#171c3a",
+        borderRadius: "30px",
+        padding: 4,
+      }}
+    >
+      <Typography fontSize={32} fontWeight={600} color="#FFD700" ml={3}>
+        Expense
+      </Typography>
+      <Typography fontSize={24} fontWeight={500} color="white" ml={3} mb={3}>
+        ₹{" "}
+        {incomeSourceDataForGraph2
+          .reduce((sum, item) => sum + parseFloat(item.value), 0)
+          .toLocaleString(undefined, { minimumFractionDigits: 2 })}
+      </Typography>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="w-full min-h-[150px] md:min-h-[150px]">
+          <ResponsiveContainer width="100%" height="100%" aspect={2}>
+            <LineChart data={incomeSourceDataForGraph2}>
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#FF4500"
+                strokeWidth={3}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </Stack>
+  </motion.div>
+</Stack>
+
 
         {/* Card 3: Spendings Breakdown */}
         <motion.div whileHover={{ scale: 1.05 }}>
-          <Stack sx={{ height: "100%", width: "100%", padding: 1.5 }}>
+          <Stack sx={{ height: "100%", width: "100%", padding: 0.2 }}>
             <Box
               sx={{
                 height: "100%",
