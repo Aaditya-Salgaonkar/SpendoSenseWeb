@@ -57,6 +57,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       alert(error.message);
+      navigate("/landingpage");
       console.error("Login Error:", error);
     } finally {
       
