@@ -85,7 +85,7 @@ const AddAsset = () => {
             type="submit"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="py-3 bg-blue-800 text-white rounded w-full"
+            className="py-3  bg-blue-800 text-white rounded w-full"
           >
             Submit
           </motion.button>
