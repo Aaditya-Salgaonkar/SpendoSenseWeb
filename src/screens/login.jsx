@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         setTimeout(() => {
           navigate("/");
-          window.location.reload(); // Ensures App.jsx recognizes the token change
+          window.location.reload();
         }, 300);
       } else {
         throw new Error("Authentication failed. No session found.");
