@@ -17,8 +17,8 @@ export default function LoginPage() {
     const storedToken = sessionStorage.getItem("token");
     if (storedToken) {
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 500); 
+        navigate("/");
+      }, 1500); 
     }
   }, []);
   
