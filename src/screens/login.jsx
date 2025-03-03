@@ -45,13 +45,13 @@ export default function LoginPage() {
   
         sessionStorage.setItem("token", data.session.access_token);
   
-        alert("Login successful! Redirecting...");
+       // alert("Login successful! Redirecting...");
         
         setTimeout(() => {
           navigate("/dashboard");
-          window.location.reload(); // Force refresh to ensure token update
+          //window.location.reload(); // Force refresh to ensure token update
           setLoading(false);
-        }, 1500);
+        }, 500);
       } else {
         throw new Error("Authentication failed. No session found.");
       }
