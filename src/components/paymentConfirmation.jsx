@@ -9,7 +9,7 @@ const PaymentConfirmation = ({ amount = 0, paymentMethod = "Unknown" }) => {
 
   useEffect(() => {
     if (seconds <= 0) {
-      navigate("/dashboard");
+      navigate("/");
       return;
     }
 

@@ -42,7 +42,7 @@ export default function LoginPage() {
         sessionStorage.setItem("token", data.session.access_token);
 
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/");
           window.location.reload(); // Ensures App.jsx recognizes the token change
         }, 300);
       } else {

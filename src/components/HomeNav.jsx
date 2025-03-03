@@ -90,7 +90,7 @@ const HomeNav = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex gap-3 bg-[#0a0a3e] rounded-lg py-3 px-5">
-          <NavButton icon={<DashboardRounded />} text="Dashboard" onClick={() => navigate("/dashboard")} />
+          <NavButton icon={<DashboardRounded />} text="Dashboard" onClick={() => navigate("/")} />
           <NavButton icon={<Wallet />} text="Expenses" onClick={() => navigate("/expenses")} />
           <NavButton icon={<Insights />} text="Insights" onClick={() => navigate("/insights")} />
           <NavButton icon={<Coins />} text="Income" onClick={() => navigate("/income")} />
@@ -139,7 +139,7 @@ const HomeNav = () => {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden flex flex-col items-center gap-3 mt-3 bg-[#0a0a3e] rounded-lg py-3 px-3">
-          <NavButton icon={<DashboardRounded />} text="Dashboard" onClick={() => navigate("/dashboard")} />
+          <NavButton icon={<DashboardRounded />} text="Dashboard" onClick={() => navigate("/")} />
           <NavButton icon={<Wallet />} text="Expenses" onClick={() => navigate("/expenses")} />
           <NavButton icon={<Insights />} text="Insights" onClick={() => navigate("/insights")} />
           <NavButton icon={<Coins />} text="Income" onClick={() => navigate("/income")} />
