@@ -16,7 +16,7 @@ export default function LoginPage() {
   useEffect(() => {
     const storedToken = sessionStorage.getItem("token");
     if (storedToken) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, []);
 
