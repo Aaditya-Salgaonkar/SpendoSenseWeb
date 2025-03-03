@@ -18,9 +18,9 @@ export default function LoginPage() {
     if (storedToken) {
       setTimeout(() => {
         navigate("/dashboard");
-      }, 500); // Add a slight delay to ensure session storage is updated
+      }, 500); 
     }
-  }, [navigate]);
+  }, []);
   
 
   function handleChange(event) {
