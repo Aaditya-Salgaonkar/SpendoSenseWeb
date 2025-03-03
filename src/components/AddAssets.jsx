@@ -53,9 +53,9 @@ const AddAsset = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center p-10 bg-[#0a0f1c]">
-      <div className="p-8 rounded-lg shadow-lg shadow-blue-800 bg-opacity-5 w-1/3">
-        <h2 className="text-xl bg-gradient-to-r from-blue-500 to-black font-semibold mb-4 text-transparent bg-clip-text">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-[#0a0f1c]">
+      <div className="p-6 md:p-8 rounded-lg shadow-lg shadow-blue-800 bg-opacity-5 w-full max-w-md">
+        <h2 className="text-xl bg-gradient-to-r from-blue-500 to-black font-semibold mb-4 text-transparent bg-clip-text text-center">
           Add Asset
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -65,14 +65,14 @@ const AddAsset = () => {
             value={formData.value}
             onChange={handleChange}
             placeholder="Asset Value"
-            className="p-2 border rounded hover:border-green-400"
+            className="p-3 border rounded w-full hover:border-green-400"
             required
           />
           <select
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="p-2 border rounded hover:border-green-400"
+            className="p-3 border rounded w-full hover:border-green-400"
             required
           >
             <option value="" disabled>Select Category</option>
@@ -85,7 +85,7 @@ const AddAsset = () => {
             type="submit"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 bg-blue-800 text-white rounded"
+            className="py-3 bg-blue-800 text-white rounded w-full"
           >
             Submit
           </motion.button>
