@@ -95,7 +95,7 @@ export default function LandingPage() {
         <h2 className="text-3xl font-bold text-blue-300">Live Expense Insights</h2>
         <p className="mt-2 text-gray-400 mb-4">Visualize your expenses dynamically.</p>
         <Box>
-          <img src="src/assets/dash.png" alt="Dashboard Preview" className="w-full h-auto rounded-lg shadow-lg" />
+          <img src="/src/assets/dash.png" alt="Dashboard Preview" className="w-full h-auto rounded-lg shadow-lg" />
         </Box>
       </motion.section>
 

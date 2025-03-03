@@ -445,7 +445,7 @@ const Dashboard = ({token}) => {
                 textAlign="left"
                 ml={3}
               >
-                Spending
+                Expense
               </Typography>
               <Typography
                 fontSize={24}

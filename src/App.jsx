@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
-import SignUp from "./screens/signup";
-import Login from "./screens/login";
+import SignUp from "@/screens/signup";
+import Login from "@/screens/login";
 import Dashboard from "@/screens/dashboard";
-import LandingPage from "./screens/LandingPage";
-import Expenses from "./screens/expenses";
-import Insights from "./screens/insights";
-import AddExpense from "./screens/AddExpense";
-import Income from "./screens/Income";
-import AddIncome from "./screens/AddIncome";
-import HomeNav from "./components/HomeNav";
-import Asset from "./screens/Asset";
-import AddAssets from "./components/AddAssets";
-import PaymentScreen from "./screens/PaymentScreen";
+import LandingPage from "@/screens/LandingPage";
+import Expenses from "@/screens/expenses";
+import Insights from "@/screens/insights";
+import AddExpense from "@/screens/AddExpense";
+import Income from "@/screens/Income";
+import AddIncome from "@/screens/AddIncome";
+import Asset from "@/screens/Asset";
+import AddAssets from "@/components/AddAssets";
+import PaymentScreen from "@/screens/PaymentScreen";
 const App = () => {
   const [token, setToken] = useState(sessionStorage.getItem("token") || null);
-
 
   useEffect(() => {
     if (token) {
@@ -23,7 +21,7 @@ const App = () => {
     } else {
       sessionStorage.removeItem("token"); 
     }
-  }, [token]);
+  }, []);
   
 
   return (

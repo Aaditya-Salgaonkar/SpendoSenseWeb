@@ -116,7 +116,7 @@ const AssetDistribution = () => {
     <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Asset Distribution PieChart */}
       <div className="bg-[#171c3a] p-6 rounded-3xl shadow-lg flex flex-col pl-8">
-        <h2 className="text-3xl  font-bold text-gradient bg-clip-text text-transparent text-[#FFD700] pb-3 pt-2">
+        <h2 className="text-3xl  font-bold text-gradient bg-clip-text text-[#FFD700] pb-3 pt-2">
           Asset Distribution
         </h2>
 
