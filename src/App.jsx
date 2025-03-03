@@ -28,7 +28,7 @@ const App = () => {
     <BrowserRouter>
       <Routes>
       <Route path="/landingpage" element={<LandingPage />} />
-        <Route path="/" element={token ? <Navigate to="/dashboard" /> : <LandingPage />} />
+        <Route path="/" element={token ? <Dashboard token={token} /> : <LandingPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={token ? <Dashboard token={token} /> : <Navigate to="/login" />} />
